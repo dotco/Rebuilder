@@ -129,11 +129,34 @@ $rebuilder = new Rebuilder_Core($modules);
 $rebuilder->run();
 ```
 
-## Existing Modules ##
-Two modules currently exist and are shipped with Rebuilder:
+#### Run Amazon S3 ####
+```php
+<?php
+$modules = array(
+    's3' => array(
+        'class' => 'S3',
+        'enabled' => TRUE,
+        'config' => array(
+            'accessKey' => 'your-access-key',
+            'privateKey' => 'your-private-key',
+            'useSSL' => true,
+            'bucket' => 'bucket-name'
+        )
+    )
+);
 
-* JSMin - A modified PHP port of php-jsmin to work with Rebuilder
-* CSSTidy - A modified version of php-css-tidy to work with Rebuilder
+require('Rebuilder/Core.php');
+$rebuilder = new Rebuilder_Core($modules);
+$rebuilder->run();
+```
+
+
+## Existing Modules ##
+Three modules currently exist and are shipped with Rebuilder:
+
+* JSMin - A modified PHP port of php-jsmin that works with Rebuilder
+* CSSTidy - A modified version of php-css-tidy that works with Rebuilder
+* S3 - A modified version of amazon-s3-php-class that works with Rebuilder
 
 Below is a rundown of the modules and their configuration parameters.
 
@@ -159,3 +182,6 @@ CSSTidy has the following configuration settings:
 * **multi_line** - Whether to combine the files on a single line (max compression), or one rule per line.
 * **files** - An array of the relative paths to the files to be merged. Must be in order.
 * **output_file** - The relative path to the output file where the CSS files get merged.
+
+### Amazon S3 ###
+S3 is a module for adding assets to your Amazon S3 account.
