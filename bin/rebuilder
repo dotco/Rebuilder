@@ -1,0 +1,154 @@
+#!/usr/bin/php
+<?php
+// check for params
+$options = getopt('c:e::a:t:', array('config:', 'env::', 'action:', 'type:'));
+
+// check on configuration file to load
+if (!empty($options['config']) || !empty($options['c'])) {
+    // attempt to load the file
+    $file = !empty($options['config']) ? $options['config'] : $options['c'];
+    if (!file_exists($file)) {
+        throw new Exception('Config file does not exist: ' . $file);
+    }
+
+    $config = include_once($file);
+
+    // check on whether we need to load a specific environmental within the config
+    $environment = !empty($options['env'])
+        ? $options['env'] : (!empty($options['e'])
+            ? $options['e']
+            : FALSE);
+    define('ENVIRONMENT', $environment);
+
+    // set config to environment
+    if (ENVIRONMENT && isset($config[ENVIRONMENT])) {
+        $config = $config[ENVIRONMENT];
+    }
+}
+
+// check for the action
+if (!empty($options['action']) || !empty($options['a'])) {
+
+    // the modules we end up merging
+    $modules = array();
+
+    // retrieve action and see if we have multiple
+    $action = !empty($options['action']) ? $options['action'] : $options['a'];
+    $action = explode(',', $action);
+    $action = array_map('trim', $action);
+
+    // iterate over all actions to add to module
+    foreach ($action as $a) {
+
+        // check for module action config options from file
+        $modules = array_merge($modules, array(
+            $a => isset($config[$a]) ? $config[$a] : array()
+        ));
+
+        /*
+        switch ($a) {
+
+            case 'bundler':
+                $modules = array_merge($modules, array(
+                    'bundler' => isset($config['bundler']) ? $config['bundler'] : array()
+                ));
+                break;
+
+            case 'css':
+
+
+                $modules = array_merge($modules, array(
+                    'csstidy' => array(
+                        'enabled' => TRUE,
+                        'config' => array(
+                            'basepath' => PUBLIC_PATH,
+                            'multi_line' => TRUE,
+                            'files' => $config['css'],
+                            'output_file' => $config['cssmin']
+                        )
+                    )
+                ));
+                break;
+
+            case 'js':
+                $modules = array_merge($modules, array(
+                    'jsmin' => array(
+
+                        'enabled' => TRUE,
+                        'config' => array(
+                            'basepath' => PUBLIC_PATH,
+                            'files' => $config['js'],
+                            'output_file' => $config['jsmin']
+                        )
+                    )
+                ));
+                break;
+
+            case 's3':
+                $cnf = $config['amazon'];
+
+                // check for type
+                $type = !empty($options['type'])
+                    ? $options['type']
+                    : (!empty($options['t'])
+                        ? $options['t']
+                        : NULL);
+
+                if (!empty($type)) {
+                    $type = explode(',', $type);
+                    $type = array_map('trim', $type);
+                    $cnf['type'] = $type;
+                }
+
+                $modules = array_merge($modules, array(
+                    's3' => array(
+                        'class' => 'S3',
+                        'enabled' => TRUE,
+                        'config' => $cnf
+                    )
+                ));
+                break;
+
+            case 'gzip':
+                $cnf = $config['amazon'];
+
+                // check for type
+                $type = !empty($options['type'])
+                    ? $options['type']
+                    : (!empty($options['t'])
+                        ? $options['t']
+                        : NULL);
+
+                if (!empty($type)) {
+                    $type = explode(',', $type);
+                    $type = array_map('trim', $type);
+                    $cnf['type'] = $type;
+                }
+
+                $modules = array_merge($modules, array(
+                    'gzip' => array(
+                        'class' => 'Gzip',
+                        'enabled' => TRUE,
+                        'config' => $cnf
+                    )
+                ));
+                break;
+
+        }
+        */
+
+    }
+
+    // check if the config file has customPaths for the autoloader
+    $customPaths = isset($config['customPaths']) ? $config['customPaths'] : array();
+
+    // check if we actually have modules to run
+    if (!empty($modules)) {
+        //require(APPPATH . 'Rebuilder/Core.php');
+        $rebuilder = new \Rebuilder\Core($modules, $customPaths);
+        $rebuilder->run();
+    }
+
+}
+
+die('Rebuilder CLI has completed.');
