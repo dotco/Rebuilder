@@ -49,7 +49,8 @@ namespace Rebuilder\Modules;
  * @link https://github.com/rgrove/jsmin-php
  */
 
-class JSMin {
+class JSMin implements ModulesAbstract {
+
     const ORD_LF            = 10;
     const ORD_SPACE         = 32;
     const ACTION_KEEP_A     = 1;
@@ -68,6 +69,14 @@ class JSMin {
 
     protected $atMaxDebugLength = false;
     protected $debugStr = '';
+
+	/**
+	 * Whether to combine JS files into a single file without any form
+	 * of minification. The combined files will take the output_file name
+	 * and end with ".compressed.js" as opposed to ".min.js"
+	 * @var	bool
+	 */
+	private $_combine_files = FALSE;
 
 	/**
 	 * The base directory to the application public directory. Should be a full
@@ -125,6 +134,10 @@ class JSMin {
 		if (!empty($config['output_file'])) {
 			$this->setOutputFile($config['output_file']);
 		}
+
+		if (!empty($config['combine_files'])) {
+			$this->_combineFiles = TRUE;
+		}
     }
 
 	/**
@@ -138,15 +151,20 @@ class JSMin {
 	{
 		// determine if we need to run
 		if ($this->requiresRebuild()) {
+			// simple handler for combining the files
+			if ($this->_combine_files) {
+				$this->combineFiles();
+			}
+
 			// get the compressed string
 			$compressed = $this->minifyAndMergeFiles()->getCompressedJS(true);
 
 			// if no errors, write to the output file
 			if (!empty($compressed)) {
-				error_log('[JSMin] Files compressed.');
+				$this->log('[JSMin] Files compressed.');
 				if (isset($this->output_file)) {
 					if (file_put_contents($this->output_file, $compressed)) {
-						error_log('[JSMin] Files saved to output file ' . $this->output_file . '.');
+						$this->log('[JSMin] Files saved to output file ' . $this->output_file . '.');
 					}
 				} else {
 					echo $compressed;
@@ -182,11 +200,11 @@ class JSMin {
 		) {
 			$this->output_file = $file;
 			$this->last_modified = filemtime($this->output_file);
-			error_log('[JSMin] Set output file to ' . $file . '.');
+			$this->log('[JSMin] Set output file to ' . $file . '.');
 			return true;
 		}
 
-		error_log('[JSMin] Could not set output file to ' . $file . '.');
+		$this->log('[JSMin] Could not set output file to ' . $file . '.');
 		return false;
 	}
 
@@ -217,7 +235,7 @@ class JSMin {
 			&& is_readable($file)
 		) {
 			$this->files[] = $file;
-			error_log('[JSMin] Added file ' . $file . '.');
+			$this->log('[JSMin] Added file ' . $file . '.');
 			return true;
 		}
 
@@ -225,11 +243,11 @@ class JSMin {
         $contents = file_get_contents($file);
         if ($contents) {
             $this->files[] = $file;
-            error_log('[JSMin] Added file ' . $file . '.');
+            $this->log('[JSMin] Added file ' . $file . '.');
             return true;
         }
 
-		error_log('[JSMin] Could not add file ' . $file . '.');
+		$this->log('[JSMin] Could not add file ' . $file . '.');
 		return false;
 	}
 
@@ -276,12 +294,62 @@ class JSMin {
 		}
 
 		if ($max_modified > $this->last_modified) {
-			error_log('[JSMin] Rebuild required.');
+			$this->log('[JSMin] Rebuild required.');
 			return true;
 		}
 
-		error_log('[JSMin] No rebuild required.');
+		$this->log('[JSMin] No rebuild required.');
 		return false;
+	}
+
+	/**
+	 * Handles cominging files without any form of minification. This is a simple
+	 * method for combining of JS files but not touching them.
+	 *
+	 * @access	public
+	 * @return	void
+	 */
+	public function combineFiles()
+	{
+		$output = '';
+
+		foreach ($this->files as $file) {
+			$contents = null;
+
+            // check if we need retrieval by URL
+            if (strpos($file, 'http') === 0) {
+                $contents = file_get_contents($file);
+            } else {
+                $fh = fopen($file, 'r');
+                $contents = fread($fh, filesize($file));
+                fclose($fh);
+            }
+
+            // if we don't have contents, continue
+			if (!$contents) {
+                $this->log('[JSMin] Error, contents not found in ' . $file . '.');
+                continue;
+			}
+
+			// add contents to output
+			$output .= $contents;
+		}
+
+		// if no errors, write to the output file
+		if (!empty($output)) {
+			$this->log('[JSMin] Files combined into single string.');
+			if (isset($this->output_file)) {
+				// determine the combined filename based on the output filename
+				$filename =
+					dirname($this->output_file) . DIRECTORY_SEPARATOR
+					. basename($this->output_file, '.js')
+					. '.compressed.js';
+
+				if (file_put_contents($filename, $output)) {
+					$this->log('[JSMin] Files saved to output file ' . $filename . '.');
+				}
+			}
+		}
 	}
 
 	/**
@@ -309,7 +377,7 @@ class JSMin {
 
             // if we don't have contents, continue
 			if (!$contents) {
-                error_log('[JSMin] Error, contents not found in ' . $file . '.');
+                $this->log('[JSMin] Error, contents not found in ' . $file . '.');
                 continue;
 			}
 
@@ -319,7 +387,7 @@ class JSMin {
                 $this->compressed_js .= $contents;
             } else {
                 // indicate minimized
-                error_log('[JSMin] Minifying file ' . $file . '.');
+                $this->log('[JSMin] Minifying file ' . $file . '.');
 
                 // reset JSMin
                 $this->reset();
@@ -331,11 +399,11 @@ class JSMin {
             }
 
             // indicate merge
-            error_log('[JSMin] Merged file ' . $file . '.');
+            $this->log('[JSMin] Merged file ' . $file . '.');
 		}
 
 		// log the merge
-		error_log('[JSMin] Original JS files merged.');
+		$this->log('[JSMin] Original JS files merged.');
 
 		// allow chaining
 		return $this;

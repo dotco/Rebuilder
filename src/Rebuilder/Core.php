@@ -4,7 +4,7 @@ namespace Rebuilder;
 /**
  * The core rebuilder class which handles the loading of modules.
  */
-class Rebuilder_Core {
+class Core {
 
     /**
      * The default constructor for loading configuration settings and
@@ -15,7 +15,7 @@ class Rebuilder_Core {
      * @param   array   $customPaths    Full paths to custom module directories
      * @return  void
      */
-    public function __construct($modules = array(), $customPaths)
+    public function __construct($modules = array(), $customPaths = array())
     {
         // pull in all module default config values
         $this->loader = new \Rebuilder\Loader($customPaths);
@@ -51,7 +51,7 @@ class Rebuilder_Core {
             try {
 
                 // use the class param for autoloading
-                $module = new $config['class']($config['config']);
+                $module = new $config['class']($config['config'], $this->loader);
 
                 // trigger running of the module
                 $module->run();
@@ -98,5 +98,5 @@ class Rebuilder_Core {
         $this->log('[Exception] Line ' . $e->getLine() . ' in ' . $e->getFile());
         $this->log('[Exception] ' . print_r($e->getTrace(), true));
     }
-    
+
 }

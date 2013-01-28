@@ -16,7 +16,7 @@ namespace Rebuilder\Modules;
  * @author		Corey Ballou <corey@go.co>
  * @link		http://github.com/cballou
  */
-class CSSTidy {
+class CSSTidy implements ModulesAbstract {
 
 	/**
 	 * Whether you want to output CSS on a single line or multiple lines. This
@@ -71,7 +71,7 @@ class CSSTidy {
 	 */
 	public function __construct($config = array())
 	{
-		if (!empty($config['multi_line'])) {
+		if (isset($config['multi_line'])) {
 			$this->multi_line = (bool) $config['multi_line'];
 		}
 
@@ -91,6 +91,10 @@ class CSSTidy {
 		if (!empty($config['output_file'])) {
 			$this->setOutputFile($config['output_file']);
 		}
+
+		if (!empty($config['combine_files'])) {
+			$this->_combineFiles = TRUE;
+		}
 	}
 
 	/**
@@ -104,15 +108,20 @@ class CSSTidy {
 	{
 		// determine if we need to run
 		if ($this->requiresRebuild()) {
+			// simple handler for combining the files
+			if ($this->_combine_files) {
+				$this->combineFiles();
+			}
+
 			// get the compressed string
 			$compressed = $this->mergeFiles()->compressCSS()->getCompressedCSS(true);
 
 			// if no errors, write to the output file
 			if (!empty($compressed)) {
-				error_log('[CSSTidy] Files compressed.');
+				$this->log('[CSSTidy] Files compressed.');
 				if (isset($this->output_file)) {
 					if (file_put_contents($this->output_file, $compressed)) {
-						error_log('[CSSTidy] Files saved to output file ' . $this->output_file . '.');
+						$this->log('[CSSTidy] Files saved to output file ' . $this->output_file . '.');
 					}
 				} else {
 					echo $compressed;
@@ -148,7 +157,7 @@ class CSSTidy {
 		) {
 			$this->output_file = $file;
 			$this->last_modified = filemtime($this->output_file);
-			error_log('[CSSTidy] Set output file to ' . $file . '.');
+			$this->log('[CSSTidy] Set output file to ' . $file . '.');
 			return true;
 		}
 
@@ -156,11 +165,11 @@ class CSSTidy {
         $contents = file_get_contents($file);
         if ($contents) {
             $this->files[] = $contents;
-			error_log('[CSSTidy] Added file ' . $file . '.');
+			$this->log('[CSSTidy] Added file ' . $file . '.');
             return true;
         }
 
-		error_log('[CSSTidy] Could not set output file to ' . $file . '.');
+		$this->log('[CSSTidy] Could not set output file to ' . $file . '.');
 		return false;
 	}
 
@@ -190,11 +199,11 @@ class CSSTidy {
 			&& is_readable($file)
 		) {
 			$this->files[] = $file;
-			error_log('[CSSTidy] Added file ' . $file . '.');
+			$this->log('[CSSTidy] Added file ' . $file . '.');
 			return true;
 		}
 
-		error_log('[CSSTidy] Could not add file ' . $file . '.');
+		$this->log('[CSSTidy] Could not add file ' . $file . '.');
 		return false;
 	}
 
@@ -241,12 +250,62 @@ class CSSTidy {
 		}
 
 		if ($max_modified > $this->last_modified) {
-			error_log('[CSSTidy] Rebuild required.');
+			$this->log('[CSSTidy] Rebuild required.');
 			return true;
 		}
 
-		error_log('[CSSTidy] No rebuild required.');
+		$this->log('[CSSTidy] No rebuild required.');
 		return false;
+	}
+
+	/**
+	 * Handles cominging files without any form of minification. This is a simple
+	 * method for combining of JS files but not touching them.
+	 *
+	 * @access	public
+	 * @return	void
+	 */
+	public function combineFiles()
+	{
+		$output = '';
+
+		foreach ($this->files as $file) {
+			$contents = null;
+
+            // check if we need retrieval by URL
+            if (strpos($file, 'http') === 0) {
+                $contents = file_get_contents($file);
+            } else {
+                $fh = fopen($file, 'r');
+                $contents = fread($fh, filesize($file));
+                fclose($fh);
+            }
+
+            // if we don't have contents, continue
+			if (!$contents) {
+                $this->log('[CSSTidy] Error, contents not found in ' . $file . '.');
+                continue;
+			}
+
+			// add contents to output
+			$output .= $contents;
+		}
+
+		// if no errors, write to the output file
+		if (!empty($output)) {
+			$this->log('[JSMin] Files combined into single string.');
+			if (isset($this->output_file)) {
+				// determine the combined filename based on the output filename
+				$filename =
+					dirname($this->output_file) . DIRECTORY_SEPARATOR
+					. basename($this->output_file, '.css')
+					. '.compressed.css';
+
+				if (file_put_contents($filename, $output)) {
+					$this->log('[CSSTidy] Files saved to output file ' . $filename . '.');
+				}
+			}
+		}
 	}
 
 	/**
@@ -275,7 +334,7 @@ class CSSTidy {
 		}
 
 		// log the merge
-		error_log('[CSSTidy] Original css files merged.');
+		$this->log('[CSSTidy] Original css files merged.');
 
 		// allow chaining
 		return $this;
