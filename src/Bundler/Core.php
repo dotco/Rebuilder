@@ -56,7 +56,7 @@ class Core {
 	 * @param	array   $config
 	 * @return	void
 	 */
-	public function __construct($config = array(), \Rebuilder\Loader $loader)
+	public function __construct($config = array())
 	{
         // set the loader
         $this->loader = $loader;
@@ -140,6 +140,7 @@ class Core {
 		}
 
 		// TODO: output file(s)
+		return $files;
 	}
 
 	/**
@@ -200,6 +201,7 @@ class Core {
 		}
 
 		// TODO: output file(s)
+		return $files;
 	}
 
     /**
