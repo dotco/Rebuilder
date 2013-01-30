@@ -52,8 +52,8 @@ class Core {
 	 */
 	public function __construct($config = array())
 	{
-        if (!empty($config['bundles'])) {
-            $this->bundles = $config['bundles'];
+        if (!empty($config['bundler']['config']['bundles'])) {
+            $this->bundles = $config['bundler']['config']['bundles'];
         }
 
         if (!empty($config['csstidy'])) {
