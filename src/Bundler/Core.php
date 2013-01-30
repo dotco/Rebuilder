@@ -14,12 +14,6 @@ namespace Bundler;
 class Core {
 
     /**
-     * The instantiated Rebuilder module loader.
-     * @var Rebuilder\Loader
-     */
-    public $loader;
-
-    /**
      * Stores the incoming bundles.
      * @var array
      */
