@@ -17,59 +17,59 @@ class Core {
      * Stores the incoming bundles.
      * @var array
      */
-    public $bundles = array();
+    public static $bundles = array();
 
     /**
      * Stores the incoming CSS configuration options.
      * @var array
      */
-    public $csstidy = array();
+    public static $csstidy = array();
 
     /**
      * Stores the incoming JS configuration options.
      * @var array
      */
-    public $jsmin = array();
+    public static $jsmin = array();
 
     /**
      * Stores the incoming Gzip configuration options.
      * @var array
      */
-    public $gzip = array();
+    public static $gzip = array();
 
     /**
      * Stores the incoming Amazon S3 configuration options.
      * @var array
      */
-    public $s3 = array();
+    public static $s3 = array();
 
 	/**
-	 * Default constructor for setting up configuration options.
+	 * Default handler for setting up configuration options.
 	 *
 	 * @access	public
 	 * @param	array   $config
 	 * @return	void
 	 */
-	public function __construct($config = array())
+	public static function init($config = array())
 	{
         if (!empty($config['bundler']['config']['bundles'])) {
-            $this->bundles = $config['bundler']['config']['bundles'];
+            self::$bundles = $config['bundler']['config']['bundles'];
         }
 
         if (!empty($config['csstidy'])) {
-            $this->csstidy = $config['csstidy'];
+            self::$csstidy = $config['csstidy'];
         }
 
         if (!empty($config['jsmin'])) {
-            $this->jsmin = $config['jsmin'];
+            self::$jsmin = $config['jsmin'];
         }
 
         if (!empty($config['gzip'])) {
-            $this->gzip = $config['gzip'];
+            self::$gzip = $config['gzip'];
         }
 
         if (!empty($config['s3'])) {
-            $this->s3 = $config['s3'];
+            self::$s3 = $config['s3'];
         }
 	}
 
@@ -80,58 +80,59 @@ class Core {
 	 * @param	string	$bundle
 	 * @return	void
 	 */
-	public function css($bundle)
+	public static function css($bundle)
 	{
-		if (empty($this->bundles[$bundle]['css'])) {
+		if (empty(self::$bundles[$bundle]['css'])) {
 			return false;
 		}
 
 		// merge bundle pre-requisites
-		$bundles = $this->bundles[$bundle]['css']['files'];
-		if (!empty($this->bundles[$bundle]['css']['requires'])) {
-			$bundles = $this->mergeBundles(
+		$bundles = self::$bundles[$bundle]['css']['files'];
+		if (!empty(self::$bundles[$bundle]['css']['requires'])) {
+			$bundles = self::mergeBundles(
 				$bundle,
 				$bundles,
-				$this->bundles[$bundle]['css']['requires']
+				self::$bundles[$bundle]['css']['requires'],
+				'css'
 			);
 		}
 
 		// for every file, set the proper path
-		foreach ($files as $k => $path) {
+		foreach ($bundles as $k => $path) {
 			$dir = dirname($path) . '/';
 			$filename = basename($path, '.css');
 
-			if (isset($this->csstidy['minify']) && $this->csstidy['minify'] === TRUE) {
+			if (isset(self::$csstidy['minify']) && self::$csstidy['minify'] === TRUE) {
 				if (strpos($path, '.min.css') === FALSE) {
 					$filename .= '.min';
 				}
-			} else if (isset($this->csstidy['combine']) && $this->csstidy['combine'] === TRUE) {
+			} else if (isset(self::$csstidy['combine']) && self::$csstidy['combine'] === TRUE) {
 				if (strpos($path, '.compressed.css') === FALSE) {
 					$filename .= '.compressed';
 				}
 			}
 
-			if (isset($this->s3['enabled']) && $this->s3['enabled'] === TRUE) {
-				if (isset($this->gzip['enabled']) && $this->gzip['enabled'] === TRUE) {
+			if (isset(self::$s3['enabled']) && self::$s3['enabled'] === TRUE) {
+				if (isset(self::$gzip['enabled']) && self::$gzip['enabled'] === TRUE) {
 					if (strpos($path, '.gz.css') === FALSE) {
 						$filename .= '.gz';
 					}
 				}
 
 				// grab the bucket url
-				$s3BaseUrl = $this->s3['config']['bucketUrl'];
-				if (!empty($this->s3['config']['uriPrefix'])) {
-					$s3BaseUrl .= $this->s3['config']['uriPrefix'];
+				$s3BaseUrl = self::$s3['config']['bucketUrl'];
+				if (!empty(self::$s3['config']['uriPrefix'])) {
+					$s3BaseUrl .= self::$s3['config']['uriPrefix'];
 				}
 
-				$files[$k] = $s3BaseUrl . $dir . $filename . '.css';
+				$bundles[$k] = $s3BaseUrl . $dir . $filename . '.css';
 			} else {
-				$files[$k] = $dir . $filename . '.css';
+				$bundles[$k] = $dir . $filename . '.css';
 			}
 		}
 
 		// TODO: output file(s)
-		return $files;
+		return $bundles;
 	}
 
 	/**
@@ -141,58 +142,58 @@ class Core {
 	 * @param	string	$bundle
 	 * @return	void
 	 */
-	public function js($bundle)
+	public static function js($bundle)
 	{
-		if (empty($this->bundles[$bundle]['js'])) {
+		if (empty(self::$bundles[$bundle]['js'])) {
 			return false;
 		}
 
 		// merge bundle pre-requisites
-		$bundles = $this->bundles[$bundle]['js']['files'];
-		if (!empty($this->bundles[$bundle]['js']['requires'])) {
-			$bundles = $this->mergeBundles(
+		$bundles = self::$bundles[$bundle]['js']['files'];
+		if (!empty(self::$bundles[$bundle]['js']['requires'])) {
+			$bundles = self::mergeBundles(
 				$bundle,
 				$bundles,
-				$this->bundles[$bundle]['js']['requires']
+				self::$bundles[$bundle]['js']['requires']
 			);
 		}
 
 		// for every file, set the proper path
-		foreach ($files as $k => $path) {
+		foreach ($bundles as $k => $path) {
 			$dir = dirname($path) . '/';
 			$filename = basename($path, '.js');
 
-			if (isset($this->csstidy['minify']) && $this->csstidy['minify'] === TRUE) {
+			if (isset(self::$csstidy['minify']) && self::$csstidy['minify'] === TRUE) {
 				if (strpos($path, '.min.js') === FALSE) {
 					$filename .= '.min';
 				}
-			} else if (isset($this->csstidy['combine']) && $this->csstidy['combine'] === TRUE) {
+			} else if (isset(self::$csstidy['combine']) && self::$csstidy['combine'] === TRUE) {
 				if (strpos($path, '.compressed.js') === FALSE) {
 					$filename .= '.compressed';
 				}
 			}
 
-			if (isset($this->s3['enabled']) && $this->s3['enabled'] === TRUE) {
-				if (isset($this->gzip['enabled']) && $this->gzip['enabled'] === TRUE) {
+			if (isset(self::$s3['enabled']) && self::$s3['enabled'] === TRUE) {
+				if (isset(self::$gzip['enabled']) && self::$gzip['enabled'] === TRUE) {
 					if (strpos($path, '.gz.js') === FALSE) {
 						$filename .= '.gz';
 					}
 				}
 
 				// grab the bucket url
-				$s3BaseUrl = $this->s3['config']['bucketUrl'];
-				if (!empty($this->s3['config']['uriPrefix'])) {
-					$s3BaseUrl .= $this->s3['config']['uriPrefix'];
+				$s3BaseUrl = self::$s3['config']['bucketUrl'];
+				if (!empty(self::$s3['config']['uriPrefix'])) {
+					$s3BaseUrl .= self::$s3['config']['uriPrefix'];
 				}
 
-				$files[$k] = $s3BaseUrl . $dir . $filename . '.js';
+				$bundles[$k] = $s3BaseUrl . $dir . $filename . '.js';
 			} else {
-				$files[$k] = $dir . $filename . '.js';
+				$bundles[$k] = $dir . $filename . '.js';
 			}
 		}
 
 		// TODO: output file(s)
-		return $files;
+		return $bundles;
 	}
 
     /**
@@ -208,7 +209,7 @@ class Core {
      * @param   string  $type           'js' or 'css'
      * @return  void
      */
-    public function mergeBundles(
+    public static function mergeBundles(
         $bundle,
         $files = array(),
         $requirements = array(),
@@ -228,21 +229,21 @@ class Core {
             $cache[$parent_bundle] = TRUE;
 
             // ensure parent bundle exists
-            if (empty($this->bundles[$parent_bundle][$type]['files'])) {
+            if (empty(self::$bundles[$parent_bundle][$type]['files'])) {
                 continue;
             }
 
             // merge parent bundle files with the bundle
             $files = array_unique(
-                array_merge($files, $this->bundles[$parent_bundle][$type]['files'])
+                array_merge(self::$bundles[$parent_bundle][$type]['files'], $files)
             );
 
             // check if parent bundle has any pre-reqs as well
-			if (!empty($this->bundles[$parent_bundle][$type]['requires'])) {
-				$files = $this->mergeBundles(
+			if (!empty(self::$bundles[$parent_bundle][$type]['requires'])) {
+				$files = self::mergeBundles(
 					$parent_bundle,
 					$files,
-					$this->bundles[$parent_bundle][$type]['requires'],
+					self::$bundles[$parent_bundle][$type]['requires'],
 					$type
 				);
 			}
