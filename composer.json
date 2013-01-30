@@ -2,7 +2,7 @@
     "name": "dotco/rebuilder",
     "type": "library",
     "license": "MIT",
-    "description": "Logging for PHP 5.3",
+    "description": "PHP Asset management.",
     "keywords": ["asset","assets","media","css","js","minification","s3","compression"],
     "homepage": "http://github.com/dotco/Rebuilder",
     "authors": [
@@ -15,8 +15,8 @@
     ],
     "autoload": {
         "psr-0": {
-            "Rebuilder" : "src/"
-            //"src/"
+            "Rebuilder": "src/",
+            "Bundler": "src/"
         },
     },
     "require": {
