@@ -52,9 +52,6 @@ class Core {
 	 */
 	public function __construct($config = array())
 	{
-        // set the loader
-        $this->loader = $loader;
-
         if (!empty($config['bundles'])) {
             $this->bundles = $config['bundles'];
         }
