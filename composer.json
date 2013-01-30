@@ -24,10 +24,5 @@
     },
     "bin": [
         "bin/rebuilder"
-    ],
-    "extra": {
-        "branch-alias": {
-            "dev-master": "v2.0.0-dev"
-        }
-    }
+    ]
 }
