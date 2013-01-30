@@ -23,13 +23,13 @@ class Core {
      * Stores the incoming CSS configuration options.
      * @var array
      */
-    public $css = array();
+    public $csstidy = array();
 
     /**
      * Stores the incoming JS configuration options.
      * @var array
      */
-    public $js = array();
+    public $jsmin = array();
 
     /**
      * Stores the incoming Gzip configuration options.
@@ -56,12 +56,12 @@ class Core {
             $this->bundles = $config['bundles'];
         }
 
-        if (!empty($config['css'])) {
-            $this->css = $config['css'];
+        if (!empty($config['csstidy'])) {
+            $this->csstidy = $config['csstidy'];
         }
 
-        if (!empty($config['js'])) {
-            $this->js = $config['js'];
+        if (!empty($config['jsmin'])) {
+            $this->jsmin = $config['jsmin'];
         }
 
         if (!empty($config['gzip'])) {
@@ -101,11 +101,11 @@ class Core {
 			$dir = dirname($path) . '/';
 			$filename = basename($path, '.css');
 
-			if (isset($this->css['minify']) && $this->css['minify'] === TRUE) {
+			if (isset($this->csstidy['minify']) && $this->csstidy['minify'] === TRUE) {
 				if (strpos($path, '.min.css') === FALSE) {
 					$filename .= '.min';
 				}
-			} else if (isset($this->css['combine']) && $this->css['combine'] === TRUE) {
+			} else if (isset($this->csstidy['combine']) && $this->csstidy['combine'] === TRUE) {
 				if (strpos($path, '.compressed.css') === FALSE) {
 					$filename .= '.compressed';
 				}
@@ -162,11 +162,11 @@ class Core {
 			$dir = dirname($path) . '/';
 			$filename = basename($path, '.js');
 
-			if (isset($this->css['minify']) && $this->css['minify'] === TRUE) {
+			if (isset($this->csstidy['minify']) && $this->csstidy['minify'] === TRUE) {
 				if (strpos($path, '.min.js') === FALSE) {
 					$filename .= '.min';
 				}
-			} else if (isset($this->css['combine']) && $this->css['combine'] === TRUE) {
+			} else if (isset($this->csstidy['combine']) && $this->csstidy['combine'] === TRUE) {
 				if (strpos($path, '.compressed.js') === FALSE) {
 					$filename .= '.compressed';
 				}
