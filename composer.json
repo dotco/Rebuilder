@@ -17,7 +17,7 @@
         "psr-0": {
             "Rebuilder": "src/",
             "Bundler": "src/"
-        },
+        }
     },
     "require": {
         "php": ">=5.3.2",
