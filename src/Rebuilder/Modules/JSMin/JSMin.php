@@ -143,6 +143,10 @@ class JSMin extends ModulesAbstract {
 			$this->output_path = $this->basepath;
 		}
 
+		if (!is_writable($this->output_path)) {
+			throw new Exception('Output path not writable: ' . $this->output_path);
+		}
+
 		// add files with validation
 		if (!empty($config['files']) && is_array($config['files'])) {
 			foreach ($config['files'] as $file) {
@@ -217,18 +221,16 @@ class JSMin extends ModulesAbstract {
             $file = 'http:' . $file;
         }
 
-		if ($file != null && $file != ""
-			&& substr(strrchr($file, '.'), 1) == "js"
-			&& is_file($file)
-			&& is_writeable($file)
-		) {
-			$this->output_file = $file;
-			$this->last_modified = filemtime($this->output_file);
-			$this->log('[JSMin] Set output file to ' . $file . '.');
-			return true;
+		if ($file != null && $file != "" && substr(strrchr($file, '.'), 1) == "js") {
+			if ((is_file($file) && is_writable($file)) || is_writable(dirname($file))) {
+				$this->output_file = $file;
+				$this->last_modified = @filemtime($this->output_file);
+				$this->log('[JSMin] Set output file to ' . $file . '.');
+				return true;
+			}
 		}
 
-		$this->log('[JSMin] Could not set output file to ' . $file . '.');
+		$this->log('[JSMin] Could not set output file to ' . $file . '.'); die;
 		return false;
 	}
 

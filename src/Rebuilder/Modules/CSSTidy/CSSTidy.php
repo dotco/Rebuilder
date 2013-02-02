@@ -174,15 +174,13 @@ class CSSTidy extends ModulesAbstract {
             $file = 'http:' . $file;
         }
 
-		if ($file != null && $file != ""
-			&& substr(strrchr($file, '.'), 1) == "css"
-			&& is_file($file)
-			&& is_writeable($file)
-		) {
-			$this->output_file = $file;
-			$this->last_modified = filemtime($this->output_file);
-			$this->log('[CSSTidy] Set output file to ' . $file . '.');
-			return true;
+		if ($file != null && $file != "" && substr(strrchr($file, '.'), 1) == "css") {
+			if ((is_file($file) && is_writable($file)) || is_writable(dirname($file))) {
+				$this->output_file = $file;
+				$this->last_modified = @filemtime($this->output_file);
+				$this->log('[CSSTidy] Set output file to ' . $file . '.');
+				return true;
+			}
 		}
 
         // try one more thing

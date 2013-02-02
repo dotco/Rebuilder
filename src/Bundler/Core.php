@@ -74,129 +74,153 @@ class Core {
 	}
 
 	/**
-	 * Output a CSS bundle.
+	 * Output a CSS bundle. The array params for the bundle are as follows:
+	 *
+	 *   'name' => Bundle name, path to local file, or path to remote file
+	 *   'external' => Whether the bundle is a file and needs to be loaded as such
 	 *
 	 * @access	public
-	 * @param	string	$bundle
+	 * @param	mixed	$bundle		Params for the bundle to output
 	 * @return	void
 	 */
 	public static function css($bundle)
 	{
+		if (is_array($bundle)) {
+			// handle bundle params
+			if (isset($bundle['external']) && $bundle['external']) {
+				echo '<link rel="stylesheet" type="text/css" href="' . $bundle['name'] . '">' . PHP_EOL;
+				return;
+			}
+
+			// assume we load a file and not something out of the bundle dir
+			$dir = rtrim(dirname($bundle['name']), '/');
+
+			if (strpos($bundle['name'], '.css') !== FALSE) {
+				$bundle = basename($bundle['name'], '.css');
+			} else {
+				$bundle = $bundle['name'];
+			}
+		}
+
 		if (empty(self::$bundles[$bundle]['css'])) {
 			return false;
 		}
 
-		// merge bundle pre-requisites
-		$bundles = self::$bundles[$bundle]['css']['files'];
-		if (!empty(self::$bundles[$bundle]['css']['requires'])) {
-			$bundles = self::mergeBundles(
-				$bundle,
-				$bundles,
-				self::$bundles[$bundle]['css']['requires'],
-				'css'
-			);
+		if (!isset($dir)) {
+			// get the relative path to the bundle
+			$dir = isset(self::$csstidy['config']['relpath']) ? self::$csstidy['config']['relpath'] : '/';
+			$dir .= 'bundles/';
 		}
 
-		// for every file, set the proper path
-		foreach ($bundles as $k => $path) {
-			$dir = dirname($path) . '/';
-			$filename = basename($path, '.css');
+		// assumed filename of bundle/include (drop extension)
+		$filename = $bundle;
 
-			if (isset(self::$csstidy['minify']) && self::$csstidy['minify'] === TRUE) {
-				if (strpos($path, '.min.css') === FALSE) {
-					$filename .= '.min';
-				}
-			} else if (isset(self::$csstidy['combine']) && self::$csstidy['combine'] === TRUE) {
-				if (strpos($path, '.compressed.css') === FALSE) {
-					$filename .= '.compressed';
-				}
+		// check for csstidy settings
+		if (isset(self::$csstidy['minify']) && self::$csstidy['minify'] === TRUE) {
+			if (strpos($path, '.min.css') === FALSE) {
+				$filename .= '.min';
 			}
-
-			if (isset(self::$s3['enabled']) && self::$s3['enabled'] === TRUE) {
-				if (isset(self::$gzip['enabled']) && self::$gzip['enabled'] === TRUE) {
-					if (strpos($path, '.gz.css') === FALSE) {
-						$filename .= '.gz';
-					}
-				}
-
-				// grab the bucket url
-				$s3BaseUrl = self::$s3['config']['bucketUrl'];
-				if (!empty(self::$s3['config']['uriPrefix'])) {
-					$s3BaseUrl .= self::$s3['config']['uriPrefix'];
-				}
-
-				$bundles[$k] = $s3BaseUrl . $dir . $filename . '.css';
-			} else {
-				$bundles[$k] = $dir . $filename . '.css';
+		} else if (isset(self::$csstidy['combine_files']) && self::$csstidy['combine_files'] === TRUE) {
+			if (strpos($path, '.compressed.css') === FALSE) {
+				$filename .= '.compressed';
 			}
 		}
 
-		// TODO: output file(s)
-		return $bundles;
+		// check s3 settings
+		if (isset(self::$s3['enabled']) && self::$s3['enabled'] === TRUE) {
+			if (isset(self::$gzip['enabled']) && self::$gzip['enabled'] === TRUE) {
+				if (strpos($path, '.gz.css') === FALSE) {
+					$filename .= '.gz';
+				}
+			}
+
+			// grab the bucket url
+			$s3BaseUrl = self::$s3['config']['bucketUrl'];
+			if (!empty(self::$s3['config']['uriPrefix'])) {
+				$s3BaseUrl .= self::$s3['config']['uriPrefix'];
+			}
+
+			$filepath = $s3BaseUrl . $dir . $filename . '.css';
+		} else {
+			$filepath = $dir . $filename . '.css';
+		}
+
+		echo '<link rel="stylesheet" type="text/css" href="' . $filepath . '">' . PHP_EOL;
 	}
 
 	/**
-	 * Output a JS bundle.
+	 * Output a JS bundle. The array params for the bundle are as follows:
+	 *
+	 *   'name' => Bundle name, path to local file, or path to remote file
+	 *   'external' => Whether the bundle is a file and needs to be loaded as such
 	 *
 	 * @access	public
-	 * @param	string	$bundle
+	 * @param	mixed	$bundle
 	 * @return	void
 	 */
-	public static function js($bundle)
+	public static function js(array $bundle)
 	{
-		if (empty(self::$bundles[$bundle]['js'])) {
+		if (is_array($bundle)) {
+			// handle bundle params
+			if (isset($bundle['external']) && $bundle['external']) {
+				echo '<script type="text/javascript" src="' . $bundle['name'] . '"></script>' . PHP_EOL;
+				return;
+			}
+
+			// assume we load a file and not something out of the bundle dir
+			$dir = rtrim(dirname($bundle['name']), '/');
+
+			if (strpos($bundle['name'], '.js') !== FALSE) {
+				$bundle = basename($bundle['name'], '.js');
+			} else {
+				$bundle = $bundle['name'];
+			}
+		} else if (empty(self::$bundles[$bundle]['js'])) {
 			return false;
 		}
 
-		// merge bundle pre-requisites
-		$bundles = self::$bundles[$bundle]['js']['files'];
-		if (!empty(self::$bundles[$bundle]['js']['requires'])) {
-			$bundles = self::mergeBundles(
-				$bundle,
-				$bundles,
-				self::$bundles[$bundle]['js']['requires']
-			);
+		if (!isset($dir)) {
+			// get the relative path to the bundle
+			$dir = isset(self::$csstidy['config']['relpath']) ? self::$csstidy['config']['relpath'] : '/';
+			$dir .= 'bundles/';
 		}
 
-		// for every file, set the proper path
-		foreach ($bundles as $k => $path) {
-			$dir = dirname($path) . '/';
-			$filename = basename($path, '.js');
+		// assumed filename of bundle/include (drop extension)
+		$filename = $bundle;
 
-			if (isset(self::$csstidy['minify']) && self::$csstidy['minify'] === TRUE) {
-				if (strpos($path, '.min.js') === FALSE) {
-					$filename .= '.min';
-				}
-			} else if (isset(self::$csstidy['combine']) && self::$csstidy['combine'] === TRUE) {
-				if (strpos($path, '.compressed.js') === FALSE) {
-					$filename .= '.compressed';
-				}
+		// check for jsmin settings
+		if (isset(self::$jsmin['minify']) && self::$jsmin['minify'] === TRUE) {
+			if (strpos($path, '.min.js') === FALSE) {
+				$filename .= '.min';
 			}
+		} else if (isset(self::$jsmin['combine_files']) && self::$jsmin['combine_files'] === TRUE) {
+			if (strpos($path, '.compressed.js') === FALSE) {
+				$filename .= '.compressed';
+			}
+		}
 
-			if (isset(self::$s3['enabled']) && self::$s3['enabled'] === TRUE) {
-				if (isset(self::$gzip['enabled']) && self::$gzip['enabled'] === TRUE) {
-					// ensure the user can handle gzipped files
-					if (isset($_SERVER['HTTP_ACCEPT_ENCODING']) && strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') !== false) {
-						if (strpos($path, '.gz.js') === FALSE) {
-							$filename .= '.gz';
-						}
+		if (isset(self::$s3['enabled']) && self::$s3['enabled'] === TRUE) {
+			if (isset(self::$gzip['enabled']) && self::$gzip['enabled'] === TRUE) {
+				// ensure the user can handle gzipped files
+				if (isset($_SERVER['HTTP_ACCEPT_ENCODING']) && strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') !== false) {
+					if (strpos($path, '.gz.js') === FALSE) {
+						$filename .= '.gz';
 					}
 				}
-
-				// grab the bucket url
-				$s3BaseUrl = self::$s3['config']['bucketUrl'];
-				if (!empty(self::$s3['config']['uriPrefix'])) {
-					$s3BaseUrl .= self::$s3['config']['uriPrefix'];
-				}
-
-				$bundles[$k] = $s3BaseUrl . $dir . $filename . '.js';
-			} else {
-				$bundles[$k] = $dir . $filename . '.js';
 			}
+
+			// grab the bucket url
+			$s3BaseUrl = self::$s3['config']['bucketUrl'];
+			if (!empty(self::$s3['config']['uriPrefix'])) {
+				$s3BaseUrl .= self::$s3['config']['uriPrefix'];
+			}
+
+			$filepath = $s3BaseUrl . $dir . $filename . '.js';
+		} else {
+			$filepath = $dir . $filename . '.js';
 		}
 
-		// TODO: output file(s)
-		return $bundles;
+		echo '<script type="text/javascript" src="' . $filepath . '"></script>' . PHP_EOL;
 	}
 
     /**
