@@ -53,7 +53,7 @@ class Core {
 
             try {
 
-                $this->log('Running module: ' . $this->moduleName);
+                $this->log('Running module: ' . $moduleName);
 
                 // use the class param for autoloading
                 $module = new $config['class']($config['config'], $this->loader);
