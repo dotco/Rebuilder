@@ -47,13 +47,13 @@ class Bundler extends ModulesAbstract {
      * Stores the incoming CSS configuration options.
      * @var array
      */
-    public $css = array();
+    public $csstidy = array();
 
     /**
      * Stores the incoming JS configuration options.
      * @var array
      */
-    public $js = array();
+    public $jsmin = array();
 
 	/**
 	 * Default constructor for setting up configuration options.
@@ -107,7 +107,7 @@ class Bundler extends ModulesAbstract {
     public function createJsBundle($bundle, $options)
     {
         // merge the config with files and override some core options
-        $config = $this->js;
+        $config = $this->jsmin;
 
         $config['files'] = $options['files'];
         $config['output_path'] = rtrim($config['basepath'], '/') . '/bundles/';
@@ -127,7 +127,7 @@ class Bundler extends ModulesAbstract {
     public function createCssBundle($bundle, $options)
     {
         // merge the config with files
-        $config = $this->js;
+        $config = $this->csstidy;
 
         $config['files'] = $options['files'];
         $config['output_path'] = rtrim($config['basepath'], '/') . '/bundles/';
@@ -147,14 +147,19 @@ class Bundler extends ModulesAbstract {
      */
     public function mergeConfigs($config)
     {
+        // set bundles
         if (!empty($config['bundles'])) {
             $this->bundles = $config['bundles'];
         }
 
-        $modules = array('css', 'js', 'gzip', 's3');
+        // retrieve additional csstidy and jsmin since we need their paths
+        $modules = array('csstidy', 'jsmin');
         foreach($modules as $module) {
             if (!empty($config[$module])) {
                 $this->_mergeConfigs($module, $config[$module]);
+            } else {
+                // just load the default
+                $this->{$module} = $this->loader->getModule($module);
             }
         }
     }
@@ -170,7 +175,7 @@ class Bundler extends ModulesAbstract {
     protected function _mergeConfigs($type, $configOverride)
     {
         $this->{$type} = array_merge_recursive(
-            $this->loader->getConfig($type),
+            $this->loader->getModule($type),
             $configOverride
         );
     }

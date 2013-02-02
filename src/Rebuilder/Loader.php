@@ -36,11 +36,16 @@ class Loader {
      * @param   array   $customPaths    Full paths to custom module directories
      * @return  void
      */
-    public function __construct($customPaths)
+    public function __construct($modules, $customPaths)
     {
         // set the default module path
         $this->_defaultModulePath = __DIR__ . '/Modules/';
         $this->_customModulePaths = $customPaths;
+
+        // if we have modules, get them in order...
+        if (!empty($modules)) {
+            $this->setModuleOrder($modules);
+        }
 
         // load default modules
         $this->loadDefault();
@@ -50,7 +55,7 @@ class Loader {
 
         // merge defaults with modules
         if (!empty($modules)) {
-            $this->_modules = $this->_mergeModuleConfig($this->_modules, $modules);
+            $this->updateConfig($modules);
         }
 
         // register the autoloader for modules
@@ -122,6 +127,18 @@ class Loader {
     }
 
     /**
+     * Retrieve a particular modules config settings.
+     *
+     * @access  public
+     * @param   string  $module
+     * @return  array
+     */
+    public function getModule($module)
+    {
+        return isset($this->_modules[$module]) ? $this->_modules[$module] : array();
+    }
+
+    /**
      * Returns the full set of loaded modules.
      *
      * @access  public
@@ -130,6 +147,19 @@ class Loader {
     public function getModules()
     {
         return $this->_modules;
+    }
+
+    /**
+     * Ensures we maintain module order from the original input.
+     *
+     * @access  public
+     * @param   array   $modules
+     */
+    public function setModuleOrder($modules)
+    {
+        foreach ($modules as $k => $v) {
+            $this->_modules[$k] = array();
+        }
     }
 
     /**
@@ -214,6 +244,9 @@ class Loader {
      */
     public function moduleLoader($className)
     {
+        // remove namespacing
+        $className = (string) str_replace('\\', DIRECTORY_SEPARATOR, $className);
+
         $filename = explode('_', $className);
         $filename = array_map(function($arr) {
             return ucfirst($arr);
@@ -225,6 +258,9 @@ class Loader {
             // if no dir structure, assume file name has same name as module dir
             $filename = $filename[0] . '/' . $filename[0];
         }
+
+        // remove our namespace from filename
+        $filename = str_replace('Rebuilder/Modules/', '', $filename);
         $filename .= '.php';
 
         // check for file existance across all module paths

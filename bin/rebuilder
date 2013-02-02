@@ -14,7 +14,6 @@ $options = getopt('c:e::m:t:', array('config:', 'env::', 'modules:', 'type:'));
 function _array_merge_recursive(array $parent, array $override)
 {
     foreach ($override as $key => $value) {
-        echo $key . PHP_EOL;
         if (is_array($value) && isset($parent[$key]) && is_array($parent[$key])) {
             $parent[$key] = _array_merge_recursive($parent[$key], $value);
         } else {
