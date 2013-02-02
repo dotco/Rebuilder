@@ -45,10 +45,13 @@ class Core {
         foreach ($modules as $moduleName => $config) {
             // skip if module not enabled
             if (!isset($config['enabled']) || $config['enabled'] === FALSE) {
+                $this->log('Module ' . $moduleName . ' not enabled. Skipping.');
                 continue;
             }
 
             try {
+
+                $this->log('Running module: ' . $this->moduleName);
 
                 // use the class param for autoloading
                 $module = new $config['class']($config['config'], $this->loader);

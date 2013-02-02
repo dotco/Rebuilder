@@ -81,7 +81,9 @@ if (!empty($options['modules']) || !empty($options['m'])) {
 
     // check if we actually have modules to run
     if (!empty($modules)) {
-        //require(APPPATH . 'Rebuilder/Core.php');
+        echo 'Beginning the process of running the following modules in order:' . PHP_EOL;
+        echo '  - ' . implode("\n  - ", array_keys($modules)) . PHP_EOL;
+
         $rebuilder = new \Rebuilder\Core($modules, $customPaths);
         $rebuilder->run();
     } else {
