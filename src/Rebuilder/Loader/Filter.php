@@ -5,7 +5,7 @@ namespace Rebuilder\Loader;
  * A custom module loader filter which aids in the process of recursively finding
  * all module configuration files of the name "config.php".
  */
-class Filter extends RecursiveFilterIterator
+class Filter extends \RecursiveFilterIterator
 {
 
     /**

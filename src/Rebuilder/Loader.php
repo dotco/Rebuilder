@@ -39,7 +39,7 @@ class Loader {
     public function __construct($customPaths)
     {
         // set the default module path
-        $this->_defaultModulePath = __DIR__ . '/modules/';
+        $this->_defaultModulePath = __DIR__ . '/Modules/';
         $this->_customModulePaths = $customPaths;
 
         // load default modules
@@ -155,20 +155,23 @@ class Loader {
     protected function _loadModulesFromDirectory($dir)
     {
         if (!is_dir($dir)) {
+            $this->log('Module directory doesnt exist: ' . $dir);
             return;
         }
 
-        $it = new RecursiveIteratorIterator(
-            new Rebuilder\Loader\Filter(
-                new RecursiveDirectoryIterator($dir)
+        $it = new \RecursiveIteratorIterator(
+            new \Rebuilder\Loader\Filter(
+                new \RecursiveDirectoryIterator($dir)
             )
         );
 
         foreach ($it as $file) {
             $config = include_once($file->getPathname());
             if (!isset($this->_modules[$config['name']])) {
+                echo 'Initial module settings import: ' . $config['name'];
                 $this->_modules[$config['name']] = $config;
             } else {
+                echo 'Overriding ' . $config['name'] . PHP_EOL;
                 $this->_modules[$config['name']] =
                     $this->_mergeModuleConfig(
                         $this->_modules[$config['name']],
@@ -183,24 +186,21 @@ class Loader {
      * module params.
      *
      * @access  public
-     * @param   array   $default
-     * @param   array   $modules
+     * @param   array   $default    The currently existing module config
+     * @param   array   $override    The new module config (override)
      * @return  array
      */
-    protected function _mergeModuleConfig($default, $modules)
+    protected function _mergeModuleConfig($default, $override)
     {
-        // create a new array because we need to keep the order of modules
-        $return = array();
-
-        foreach ($modules as $k => $v) {
-            if (array_key_exists($k, $default) && is_array($v)) {
-                $return[$k] = $this->_mergeModuleConfig($default[$k], $modules[$k]);
+        foreach ($override as $k => $v) {
+            if (isset($default[$k]) && is_array($v)) {
+                $default[$k] = $this->_mergeModuleConfig($default[$k], $override[$k]);
             } else {
-                $return[$k] = $v;
+                $default[$k] = $v;
             }
         }
 
-        return $return;
+        return $default;
     }
 
     /**
@@ -238,6 +238,18 @@ class Loader {
         }
 
         require_once($filepath);
+    }
+
+    /**
+     * Logs a message to the error log.
+     *
+     * @access  public
+     * @param   $msg
+     * @return  void
+     */
+    public function log($msg)
+    {
+        echo '[' . date('Y-m-d H:i:s') . '] ' . print_r($msg, true) . PHP_EOL;
     }
 
 }
