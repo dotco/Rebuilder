@@ -140,7 +140,7 @@ class CSSTidy extends ModulesAbstract {
 		}
 
 		if (isset($config['force_rebuild'])) {
-			$this->force_rebuild = (bool) $conig['force_rebuild'];
+			$this->force_rebuild = (bool) $config['force_rebuild'];
 		}
 	}
 
@@ -292,7 +292,7 @@ class CSSTidy extends ModulesAbstract {
 		if ($this->force_rebuild) {
 			return true;
 		}
-		
+
 		$max_modified = null;
 
 		if (!empty($this->files)) {

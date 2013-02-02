@@ -174,7 +174,7 @@ class JSMin extends ModulesAbstract {
 		}
 
 		if (isset($config['force_rebuild'])) {
-			$this->force_rebuild = (bool) $conig['force_rebuild'];
+			$this->force_rebuild = (bool) $config['force_rebuild'];
 		}
     }
 
