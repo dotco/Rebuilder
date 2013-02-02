@@ -106,6 +106,7 @@ class Bundler extends ModulesAbstract {
             // send through CSSTidy
             $class = new \Rebuilder\Modules\CSSTidy(
                 array(
+                    'force_rebuild' => TRUE,
                     'combine_files' => FALSE,
                     'basepath' => $this->csstidy['basepath'],
                     'output_path' => dirname($file['filepath']),
@@ -131,6 +132,7 @@ class Bundler extends ModulesAbstract {
             // send through JSMin
             $class = new \Rebuilder\Modules\JSMin(
                 array(
+                    'force_rebuild' => TRUE,
                     'combine_files' => FALSE,
                     'basepath' => $this->jsmin['basepath'],
                     'output_path' => dirname($file['filepath']),

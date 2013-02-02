@@ -80,6 +80,12 @@ class JSMin extends ModulesAbstract {
 	private $_combine_files = FALSE;
 
 	/**
+	 * Triggers forcing a rebuild.
+	 * @var	bool
+	 */
+	private $force_rebuild = FALSE;
+
+	/**
 	 * The base directory to the application public directory. Should be a full
 	 * path. Used for concatting with the individual file assets.
 	 * @var	string
@@ -165,6 +171,10 @@ class JSMin extends ModulesAbstract {
 
 		if (!empty($config['combine_files'])) {
 			$this->_combine_files = TRUE;
+		}
+
+		if (isset($config['force_rebuild'])) {
+			$this->force_rebuild = (bool) $conig['force_rebuild'];
 		}
     }
 
@@ -314,6 +324,10 @@ class JSMin extends ModulesAbstract {
 	 */
 	public function requiresRebuild()
 	{
+		if ($this->force_rebuild) {
+			return true;
+		}
+
 		$max_modified = null;
 
 		if (!empty($this->files)) {

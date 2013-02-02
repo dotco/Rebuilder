@@ -33,6 +33,12 @@ class CSSTidy extends ModulesAbstract {
 	private $_minify_files = FALSE;
 
 	/**
+	 * Triggers forcing a rebuild.
+	 * @var	bool
+	 */
+	private $force_rebuild = FALSE;
+
+	/**
 	 * Whether you want to output CSS on a single line or multiple lines. This
 	 * must be manually changed by you depending on your preference.
 	 * @var	bool
@@ -132,6 +138,10 @@ class CSSTidy extends ModulesAbstract {
 		if (!empty($config['combine_files'])) {
 			$this->_combine_files = TRUE;
 		}
+
+		if (isset($config['force_rebuild'])) {
+			$this->force_rebuild = (bool) $conig['force_rebuild'];
+		}
 	}
 
 	/**
@@ -162,7 +172,7 @@ class CSSTidy extends ModulesAbstract {
 						dirname($this->output_file) . DIRECTORY_SEPARATOR
 						. basename($this->output_file, '.css')
 						. '.min.css';
-					
+
 					if (file_put_contents($this->output_file, $compressed)) {
 						$this->log('[CSSTidy] Files saved to output file ' . $this->output_file . '.');
 					}
@@ -279,6 +289,10 @@ class CSSTidy extends ModulesAbstract {
 	 */
 	public function requiresRebuild()
 	{
+		if ($this->force_rebuild) {
+			return true;
+		}
+		
 		$max_modified = null;
 
 		if (!empty($this->files)) {
