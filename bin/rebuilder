@@ -10,6 +10,22 @@ $options = getopt('c:e::m:t:', array('config:', 'env::', 'modules:', 'type:'));
 // TODO: add help section
 // ...
 
+// handles merge of config files
+function _array_merge_recursive(array $parent, array $override)
+{
+    foreach ($override as $key => $value) {
+        echo $key . PHP_EOL;
+        if (is_array($value) && isset($parent[$key]) && is_array($parent[$key])) {
+            $parent[$key] = _array_merge_recursive($parent[$key], $value);
+        } else {
+            // direct override of value
+            $parent[$key] = $value;
+        }
+    }
+
+    return $parent;
+}
+
 // check on configuration file to load
 if (!empty($options['config']) || !empty($options['c'])) {
     // attempt to load the file
@@ -18,7 +34,21 @@ if (!empty($options['config']) || !empty($options['c'])) {
         throw new Exception('Config file does not exist: ' . $file);
     }
 
+    // load external config file
     $config = include_once($file);
+
+    // merge config settings based on environment (waterfall)
+    $environments = array(
+        'staging' => 'production',
+        'development' => 'staging',
+        'local' => 'development'
+    );
+
+    foreach ($environments as $env => $parent_env) {
+        if (isset($config[$parent_env]) && isset($config[$env])) {
+            $config[$env] = _array_merge_recursive($config[$parent_env], $config[$env]);
+        }
+    }
 
     // check on whether we need to load a specific environmental within the config
     $environment = !empty($options['env'])
@@ -58,13 +88,13 @@ if (!empty($options['modules']) || !empty($options['m'])) {
 
     // iterate over all actions to add to module
     foreach ($mods as $m) {
-        // get copy of config
-        $modConfig = array($m => isset($config[$m]) ? $config[$m] : array());
-        if (empty($modConfig)) {
+        // ensure config is set (temporary fix)
+        if (empty($config[$m])) {
             die('No configuration settings found for module ' . $m . '. Did you specify an environment?');
         }
 
         // merge with type, if applicable
+        $modConfig = array($m =>$config[$m]);
         if (!empty($type)) {
             if (isset($modConfig['config'])) {
                 $modConfig['config']['type'] = $type;
