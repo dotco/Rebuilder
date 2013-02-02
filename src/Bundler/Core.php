@@ -86,7 +86,6 @@ class Core {
 	public static function css($bundle)
 	{
 		if (is_array($bundle)) {
-			// handle bundle params
 			if (isset($bundle['external']) && $bundle['external']) {
 				echo '<link rel="stylesheet" type="text/css" href="' . $bundle['name'] . '">' . PHP_EOL;
 				return;
