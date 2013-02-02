@@ -87,7 +87,7 @@ class Core {
      */
     public function log($msg)
     {
-        echo '[' . date('Y-m-d H:i:s') . ']' . print_r($msg, true);
+        echo '[' . date('Y-m-d H:i:s') . '] ' . print_r($msg, true) . PHP_EOL;
     }
 
     /**
