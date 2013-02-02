@@ -36,7 +36,19 @@ class CSSTidy implements ModulesAbstract {
 	 * The path to the output file.
 	 * @var	string
 	 */
+	private $output_path;
+
+	/**
+	 * The path to the output file.
+	 * @var	string
+	 */
 	private $output_file;
+
+	/**
+	 * Key/val pairs to find and replace in file(s).
+	 * @var	array
+	 */
+	private $find_replace = array();
 
 	/**
 	 * The last modified time of the output file.
@@ -80,6 +92,13 @@ class CSSTidy implements ModulesAbstract {
 			$this->basepath = $config['basepath'];
 		}
 
+		// check for the base output path
+		if (!empty($config['output_path']) && is_dir($config['output_path'])) {
+			$this->output_path = $config['output_path'];
+		} else if ($this->basepath) {
+			$this->output_path = $this->basepath;
+		}
+
 		// add files with validation
 		if (!empty($config['files']) && is_array($config['files'])) {
 			foreach ($config['files'] as $file) {
@@ -90,6 +109,10 @@ class CSSTidy implements ModulesAbstract {
 		// set the output file
 		if (!empty($config['output_file'])) {
 			$this->setOutputFile($config['output_file']);
+		}
+
+		if (!empty($config['find_replace']) && is_array($config['find_replace'])) {
+			$this->find_replace = $config['find_replace'];
 		}
 
 		if (!empty($config['combine_files'])) {
@@ -140,11 +163,11 @@ class CSSTidy implements ModulesAbstract {
 	public function setOutputFile($file)
 	{
 		// handle adding the basepath to the file
-		if (!empty($this->basepath)
+		if (!empty($this->output_path)
 			&& strpos($file, 'http') === false
 			&& strpos($file, '//') === false
 		) {
-			$file = rtrim($this->basepath, DIRECTORY_SEPARATOR)
+			$file = rtrim($this->output_path, DIRECTORY_SEPARATOR)
 				. DIRECTORY_SEPARATOR . ltrim($file, DIRECTORY_SEPARATOR);
 		} else if (strpos($file, '//') === 0) {
             $file = 'http:' . $file;
@@ -287,6 +310,9 @@ class CSSTidy implements ModulesAbstract {
                 continue;
 			}
 
+			// find and replace any necessary strings
+			$contents = $this->findAndReplace($contents);
+
 			// add contents to output
 			$output .= $contents;
 		}
@@ -309,6 +335,27 @@ class CSSTidy implements ModulesAbstract {
 	}
 
 	/**
+	 * Handles find and replace in CSS files.
+	 *
+	 * @access	public
+	 * @param	string	$contents
+	 * @return	string
+	 */
+	public function findAndReplace($contents)
+	{
+		// if find and replace enabled
+		if (empty($this->find_replace)) {
+			return $contents;
+		}
+
+		return str_replace(
+			array_keys($this->find_replace),
+			array_values($this->find_replace),
+			$contents
+		);
+	}
+
+	/**
 	 * Used to generate the concatenated version of the original CSS files.
 	 *
 	 * @access	public
@@ -328,9 +375,16 @@ class CSSTidy implements ModulesAbstract {
                 fclose($fh);
             }
 
-			if ($contents) {
-				$this->original_css .= $contents;
+			if (empty($contents)) {
+				$this->log('[CSSTidy] Error, contents not found in ' . $file . '.');
+				continue;
 			}
+
+			// handle find and replace in contens
+			$contents = $this->findAndReplace($contents);
+
+			// append to unminified css
+			$this->original_css .= $contents;
 		}
 
 		// log the merge
