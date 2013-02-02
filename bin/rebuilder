@@ -59,21 +59,24 @@ if (!empty($options['modules']) || !empty($options['m'])) {
     // iterate over all actions to add to module
     foreach ($mods as $m) {
         // get copy of config
-        $config = array($m => isset($config[$m]) ? $config[$m] : array());
+        $modConfig = array($m => isset($config[$m]) ? $config[$m] : array());
+        if (empty($modConfig)) {
+            die('No configuration settings found for module ' . $m . '. Did you specify an environment?');
+        }
 
         // merge with type, if applicable
         if (!empty($type)) {
-            if (isset($config['config'])) {
-                $config['config']['type'] = $type;
+            if (isset($modConfig['config'])) {
+                $modConfig['config']['type'] = $type;
             } else {
-                $config['config'] = array(
+                $modConfig['config'] = array(
                     'type' => $type
                 );
             }
         }
 
         // check for module action config options from file
-        $modules = array_merge($modules, $config);
+        $modules = array_merge($modules, $modConfig);
     }
 
     // check if the config file has customPaths for the autoloader
