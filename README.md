@@ -10,6 +10,72 @@ they may modify. The only thing Rebuilder cares about is that your modules
 follow a specific naming convention and directory structure for autoloading
 purposes.
 
+## Existing Modules ##
+The following modules currently exist and are shipped with Rebuilder:
+
+* JSMin - A modified PHP port of php-jsmin that works with Rebuilder
+* CSSTidy - A modified version of php-css-tidy that works with Rebuilder
+* Gzip - A custom module to generate gzipped files with the extension .gz.ext
+* S3 - A modified version of amazon-s3-php-class that works with Rebuilder and Gzip module
+* Bundler - A wrapper around JSMin and CSSTidy for creating asset "bundles". Includes
+a command line binary for "bundling" assets as well as a client side script for
+including bundles on your frontend.
+
+Below is a rundown of the modules and their configuration parameters.
+
+### JSMin ###
+JSMin is a module for combining (merging) a set of JS files into a singular file.
+It has handling build in for attempted retrieval of remote HTTP files (i.e. Google
+hosted jQuery). JSMin also handles minification of Javascript files.
+It also has handling built in which will skip minification of files
+that have `min.` in their filename. This is necessary to avoid double minification.
+JSMin has the following configuration settings:
+
+* **basepath** - The full base path to the public directory of the files on the server. Gets concatted with relative filepaths below.
+* **files** - An array of the relative paths to the files to be merged. Must be in order.
+* **output_file** - The relative path to the output file where the CSS files get merged.
+
+### CSSTidy ###
+CSSTidy is a module for combining (merging) a set of CSS files into a singular
+file. CSSTidy also handles compression of the CSS into one line or one rule per line.
+
+CSSTidy has the following configuration settings:
+
+* **basepath** - The full base path to the public directory of the files on the server. Gets concatted with relative filepaths below.
+* **multi_line** - Whether to combine the files on a single line (max compression), or one rule per line.
+* **files** - An array of the relative paths to the files to be merged. Must be in order.
+* **output_file** - The relative path to the output file where the CSS files get merged.
+
+### Gzip ###
+Gzip is a module for gzipping media assets as a new file. It's tightly coupled with
+the S3 module in that the S3 module automatically handles setting the proper headers
+on gzipped files with the extension .gz.ext. This ensures that you properly serve
+gzipped files from S3.
+
+
+
+### Amazon S3 ###
+S3 is a module for adding media assets to your Amazon S3 account. It has
+configurable options for buckets, filename prefixing (making them look like a directory structure),
+gzipping, and more.
+
+### Bundler ###
+Bundler is just plain awesome. It combines all of the above modules into a package deal.
+You can create asset/media "bundles" and serve them via the included client side
+script, where it takes care of the gruntwork for determining if you want to serve
+up individual files, combined files, compressed files, gzipped files, files from S3,
+or any number of combinations... It's quite powerful.
+
+* **bundles** - A multi-dimensional array in the format `'bundlename' => array('js' => array('requires' => array(), 'files' => array()), 'css' => array('requires' => array(), 'files' => array()))`
+* **csstidy** - An array of CSSTidy configuration options
+* **gzip** - An array of Gzip configuration options
+* **jsmin** - An array of JSMin configuration options
+* **s3** - An array of S3 configuration options
+
+For all intent purposes, you can initialize bundler pulling configuration options
+from each of the modules to prevent duplicating config options.
+
+
 ## Module Conventions ##
 
 The conventions you must follow when creating or porting modules for usage with
@@ -17,6 +83,8 @@ Rebuilder are as follows:
 
 * Modules must be placed within their own namespaced directory in `/modules/`,
 i.e. `/modules/CSSTidy/` and `/modules/JSMin/`
+* Modules must include a `config.php` file in their base directory containing
+deafult configuration settings. Check below in the **Usage** section for conventions.
 * Modules may contain sub-directories and classes.
 * If you have a class contained within a sub-directory, the class name must
 include the sub-directory path included where you replace any
@@ -129,6 +197,9 @@ $rebuilder = new Rebuilder_Core($modules);
 $rebuilder->run();
 ```
 
+#### Run Gzip ####
+TODO
+
 #### Run Amazon S3 ####
 ```php
 <?php
@@ -150,38 +221,5 @@ $rebuilder = new Rebuilder_Core($modules);
 $rebuilder->run();
 ```
 
-
-## Existing Modules ##
-Three modules currently exist and are shipped with Rebuilder:
-
-* JSMin - A modified PHP port of php-jsmin that works with Rebuilder
-* CSSTidy - A modified version of php-css-tidy that works with Rebuilder
-* S3 - A modified version of amazon-s3-php-class that works with Rebuilder
-
-Below is a rundown of the modules and their configuration parameters.
-
-### JSMin ###
-JSMin is a module for combining (merging) a set of JS files into a singular file.
-It has handling build in for attempted retrieval of remote HTTP files (i.e. Google
-hosted jQuery). JSMin also handles minification of Javascript files.
-It also has handling built in which will skip minification of files
-that have `min.` in their filename. This is necessary to avoid double minification.
-JSMin has the following configuration settings:
-
-* **basepath** - The full base path to the public directory of the files on the server. Gets concatted with relative filepaths below.
-* **files** - An array of the relative paths to the files to be merged. Must be in order.
-* **output_file** - The relative path to the output file where the CSS files get merged.
-
-### CSSTidy ###
-CSSTidy is a module for combining (merging) a set of CSS files into a singular
-file. CSSTidy also handles compression of the CSS into one line or one rule per line.
-
-CSSTidy has the following configuration settings:
-
-* **basepath** - The full base path to the public directory of the files on the server. Gets concatted with relative filepaths below.
-* **multi_line** - Whether to combine the files on a single line (max compression), or one rule per line.
-* **files** - An array of the relative paths to the files to be merged. Must be in order.
-* **output_file** - The relative path to the output file where the CSS files get merged.
-
-### Amazon S3 ###
-S3 is a module for adding assets to your Amazon S3 account.
+#### Run Bundler ####
+Bundler should really have it's own README...
