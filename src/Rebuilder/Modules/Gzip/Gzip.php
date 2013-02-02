@@ -93,6 +93,13 @@ class Gzip extends ModulesAbstract {
     {
 		if (!empty($files)) {
 			foreach ($files as $f) {
+				// skip if already has .gz in extension
+				if (strpos($f['filepath'], '.gz.css') !== FALSE) {
+					continue;
+				} else if (strpos($f['filepath'], '.gz.js') !== FALSE) {
+					continue;
+				}
+
                 // generate the new name
                 $ext = substr($f['filepath'], strrpos($f['filepath'], '.') + 1);
                 $newPath = str_replace('.' . $ext, '.gz.' . $ext, $f['filepath']);
