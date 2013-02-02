@@ -154,6 +154,8 @@ class Loader {
      */
     protected function _loadModulesFromDirectory($dir)
     {
+        $this->log('Attempting to load module config from directory: ' . $dir);
+
         if (!is_dir($dir)) {
             $this->log('Module directory doesnt exist: ' . $dir);
             return;
@@ -168,10 +170,10 @@ class Loader {
         foreach ($it as $file) {
             $config = include_once($file->getPathname());
             if (!isset($this->_modules[$config['name']])) {
-                echo 'Initial module settings import: ' . $config['name'];
+                $this->log('Initial module config import: ' . $config['name']);
                 $this->_modules[$config['name']] = $config;
             } else {
-                echo 'Overriding ' . $config['name'] . PHP_EOL;
+                $this->log('Overriding module config: ' . $config['name']);
                 $this->_modules[$config['name']] =
                     $this->_mergeModuleConfig(
                         $this->_modules[$config['name']],
@@ -223,21 +225,29 @@ class Loader {
             // if no dir structure, assume file name has same name as module dir
             $filename = $filename[0] . '/' . $filename[0];
         }
+        $filename .= '.php';
 
-        $filepath = $this->_modulePath . $filename . '.php';
-        if (!file_exists($filepath)) {
-            throw new Exception(
-                'The class you have requested, ' . $className .
-                ', could not be found at: ' . $filepath
-            );
-        } else if (!is_readable($filepath)) {
-            throw new Exception(
-                'The class you have requested, ' . $className .
-                ', could not be read at: ' . $filepath
-            );
+        $this->log('moduleLoader ' . $filename);
+
+        // check for file existance across all module paths
+        $modulePaths = array($this->_defaultModulePath);
+        if (!empty($this->_customModulePaths)) {
+            $modulePaths += $this->_customModulePaths;
         }
 
-        require_once($filepath);
+        // check for existance in array
+        $moduleExists = false;
+        foreach ($modulePaths as $path) {
+            $filepath = $path . $filename;
+            if (file_exists($filepath)) {
+                require_once($filepath);
+                return true;
+            }
+        }
+
+        throw new Exception(
+            'The class you have requested, ' . $className . ', could not be found.'
+        );
     }
 
     /**

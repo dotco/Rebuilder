@@ -21,14 +21,19 @@ class Filter extends \RecursiveFilterIterator
 
     /**
      * A function which returns boolean depending on whether the filename matches
-     * config.php.
+     * config.php. Also accepts directories to continue iteration.
      *
      * @access  public
      * @return  bool
      */
     public function accept()
     {
-    	return $this->current()->isFile() && ($this->getFilename() == 'config.php');
+    	return
+			$this->hasChildren() ||
+			(
+				$this->current()->isFile()
+				&& ($this->current()->getFilename() == 'config.php')
+			);
     }
 
     /**
