@@ -239,5 +239,5 @@ Running the Bundler command line script
 ./vendor/bin/rebuilder --modules="s3" --type="img" --config="/path/to/config.php"
 
 # run bundler
-./vendor/bin/rebuilder --modules="bundler"
+./vendor/bin/rebuilder --modules="bundler" --config="/path/to/config.php"
 ```
