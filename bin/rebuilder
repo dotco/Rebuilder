@@ -30,7 +30,7 @@ if (!empty($options['config']) || !empty($options['c'])) {
 }
 
 // check for the bundle(s)
-if (!empty($options['bundles']) || !empty($options['b'])) {
+if (!empty($options['modules']) || !empty($options['m'])) {
 
     // the modules we end up merging
     $modules = array();
