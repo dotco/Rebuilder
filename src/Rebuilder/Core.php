@@ -43,19 +43,18 @@ class Core {
         // iterate over each queued module, load, and run
         $modules = $this->loader->getModules();
         foreach ($modules as $moduleName => $config) {
-            /*
             // skip if module not enabled
             if (!isset($config['enabled']) || $config['enabled'] === FALSE) {
                 $this->log('Module ' . $moduleName . ' not enabled. Skipping.');
                 continue;
             }
-            */
 
             try {
 
                 $this->log('Running module: ' . $moduleName);
-                //$this->log('Module config settings:');
-                //$this->log($config);
+                $this->log('Module config settings:');
+                $this->log($config);
+                die;
 
                 // use the class param for autoloading
                 $module = new $config['class']($config['config'], $this->loader);
