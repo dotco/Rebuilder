@@ -223,3 +223,21 @@ $rebuilder->run();
 
 #### Run Bundler ####
 Bundler should really have it's own README...
+
+##  Using Rebuilder from the Command Line ##
+
+Running the Bundler command line script
+
+```bash
+# specifying a configuration file (wont work without action param)
+./vendor/bin/rebuilder --config="/path/to/config.php"
+
+# run a particular action
+./vendor/bin/rebuilder --modules="csstidy,jsmin" --config="/path/to/config.php"
+
+# run with a type specifier (only upload images to S3)
+./vendor/bin/rebuilder --modules="s3" --type="img" --config="/path/to/config.php"
+
+# run bundler
+./vendor/bin/rebuilder --modules="bundler"
+```

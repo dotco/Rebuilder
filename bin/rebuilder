@@ -1,7 +1,10 @@
 #!/usr/bin/php
 <?php
 // check for params
-$options = getopt('c:e::a:t:', array('config:', 'env::', 'action:', 'type:'));
+$options = getopt('c:e::m:t:', array('config:', 'env::', 'modules:', 'type:'));
+
+// TODO: add help section
+// ...
 
 // check on configuration file to load
 if (!empty($options['config']) || !empty($options['c'])) {
@@ -26,16 +29,16 @@ if (!empty($options['config']) || !empty($options['c'])) {
     }
 }
 
-// check for the action
-if (!empty($options['action']) || !empty($options['a'])) {
+// check for the bundle(s)
+if (!empty($options['bundles']) || !empty($options['b'])) {
 
     // the modules we end up merging
     $modules = array();
 
     // retrieve action and see if we have multiple
-    $action = !empty($options['action']) ? $options['action'] : $options['a'];
-    $action = explode(',', $action);
-    $action = array_map('trim', $action);
+    $mods = !empty($options['modules']) ? $options['modules'] : $options['m'];
+    $mods = explode(',', $mods);
+    $mods = array_map('trim', $mods);
 
     // check for type
     $type = !empty($options['type'])
@@ -49,12 +52,10 @@ if (!empty($options['action']) || !empty($options['a'])) {
         $type = array_map('trim', $type);
     }
 
-
     // iterate over all actions to add to module
-    foreach ($action as $a) {
-
+    foreach ($mods as $m) {
         // get copy of config
-        $config = array($a => isset($config[$a]) ? $config[$a] : array());
+        $config = array($m => isset($config[$m]) ? $config[$m] : array());
 
         // merge with type, if applicable
         if (!empty($type)) {
@@ -69,7 +70,6 @@ if (!empty($options['action']) || !empty($options['a'])) {
 
         // check for module action config options from file
         $modules = array_merge($modules, $config);
-
     }
 
     // check if the config file has customPaths for the autoloader
@@ -80,6 +80,8 @@ if (!empty($options['action']) || !empty($options['a'])) {
         //require(APPPATH . 'Rebuilder/Core.php');
         $rebuilder = new \Rebuilder\Core($modules, $customPaths);
         $rebuilder->run();
+    } else {
+        throw new Exception('No modules set to run.');
     }
 
 }
