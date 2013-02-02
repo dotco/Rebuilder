@@ -85,7 +85,7 @@ class Core {
      */
     public function log($msg)
     {
-        error_log($msg);
+        echo '[' . date('Y-m-d H:i:s') . ']' . print_r($msg, true);
     }
 
     /**
