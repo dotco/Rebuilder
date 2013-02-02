@@ -1,5 +1,6 @@
 <?php
 namespace Rebuilder\Modules;
+use \Exception as Exception;
 
 /**
  * jsmin.php - PHP implementation of Douglas Crockford's JSMin.
@@ -542,7 +543,7 @@ class JSMin extends ModulesAbstract {
 
             //if (ord($this->a) <= self::ORD_LF) {
             if ($this->a === null) {
-              throw new \Rebuilder\Modules\JSMin\Exception("Unterminated string literal.\n\n" . $this->debugStr);
+              throw new Exception("Unterminated string literal.\n\n" . $this->debugStr);
             }
 
             if ($this->a === '\\') {
@@ -583,7 +584,7 @@ class JSMin extends ModulesAbstract {
                   $this->a       = $this->get();
                 //} elseif (ord($this->a) <= self::ORD_LF) {
                 } elseif ($this->a === null) {
-                  throw new \Rebuilder\Modules\JSMin\Exception("Unterminated set in Regular Expression literal.\n\n" . $this->debugStr);
+                  throw new Exception("Unterminated set in Regular Expression literal.\n\n" . $this->debugStr);
                 }
               }
             } elseif ($this->a === '/') {
@@ -593,7 +594,7 @@ class JSMin extends ModulesAbstract {
               $this->a       = $this->get();
             //} elseif (ord($this->a) <= self::ORD_LF) {
             } elseif ($this->a === null) {
-              throw new \Rebuilder\Modules\JSMin\Exception("Unterminated Regular Expression literal.\n\n" . $this->debugStr);
+              throw new Exception("Unterminated Regular Expression literal.\n\n" . $this->debugStr);
             }
 
             $this->output .= $this->a;
@@ -785,7 +786,7 @@ class JSMin extends ModulesAbstract {
                 break;
 
               case null:
-                throw new \Rebuilder\Modules\JSMin\Exception("Unterminated comment:\n\n" . $this->debugStr);
+                throw new Exception("Unterminated comment:\n\n" . $this->debugStr);
             }
           }
 

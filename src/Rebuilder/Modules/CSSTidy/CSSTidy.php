@@ -1,5 +1,6 @@
 <?php
 namespace Rebuilder\Modules;
+use \Exception as Exception;
 
 /**
  * A PHP class implementing regular expressions for combining and compressing

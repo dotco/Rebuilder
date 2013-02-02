@@ -227,8 +227,6 @@ class Loader {
         }
         $filename .= '.php';
 
-        $this->log('moduleLoader ' . $filename);
-
         // check for file existance across all module paths
         $modulePaths = array($this->_defaultModulePath);
         if (!empty($this->_customModulePaths)) {
@@ -236,18 +234,17 @@ class Loader {
         }
 
         // check for existance in array
-        $moduleExists = false;
         foreach ($modulePaths as $path) {
             $filepath = $path . $filename;
+            $this->log('Attempting to load module from path: ' . $filepath);
             if (file_exists($filepath)) {
                 require_once($filepath);
                 return true;
             }
         }
 
-        throw new \Exception(
-            'The class you have requested, ' . $className . ', could not be found.'
-        );
+        $this->log('The class you have requested, ' . $className . ', could not be found.');
+        die;
     }
 
     /**

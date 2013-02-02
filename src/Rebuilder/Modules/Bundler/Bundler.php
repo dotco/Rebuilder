@@ -1,5 +1,6 @@
 <?php
 namespace Rebuilder\Modules;
+use \Exception as Exception;
 
 /**
  * Bundler is an advanced implementation of the CSSTidy, and JSMin modules.
