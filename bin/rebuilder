@@ -92,16 +92,28 @@ if (!empty($options['modules']) || !empty($options['m'])) {
             die('No configuration settings found for module ' . $m . '. Did you specify an environment?');
         }
 
-        // merge with type, if applicable
         $modConfig = array($m =>$config[$m]);
-        if (!empty($type)) {
-            if (isset($modConfig['config'])) {
-                $modConfig['config']['type'] = $type;
-            } else {
-                $modConfig['config'] = array(
-                    'type' => $type
-                );
+        if (!isset($modConfig['config'])) {
+            $modConfig['config'] = array();
+        }
+
+        // special bundler handling due to requirements of jsmin and csstidy
+        if ($m == 'bundler') {
+            if (empty($config['csstidy']['config'])) {
+                die('Bundler requires you to include CSSTidy module config settings.');
             }
+
+            if (empty($config['jsmin']['config'])) {
+                die('Bundler requires you to include JSMin module config settings.');
+            }
+
+            $modConfig[$m]['config']['csstidy'] = $config['csstidy']['config'];
+            $modConfig[$m]['config']['jsmin'] = $config['jsmin']['config'];
+        }
+
+        // merge with type, if applicable
+        if (!empty($type)) {
+            $modConfig[$m]['config']['type'] = $type;
         }
 
         // check for module action config options from file

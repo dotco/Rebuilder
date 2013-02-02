@@ -18,12 +18,7 @@ class Core {
     public function __construct($modules = array(), $customPaths = array())
     {
         // pull in all module default config values
-        $this->loader = new \Rebuilder\Loader($customPaths);
-
-        // merge defaults with modules
-        if (!empty($modules)) {
-            $this->loader->updateConfig($modules);
-        }
+        $this->loader = new \Rebuilder\Loader($modules, $customPaths);
     }
 
     /**
@@ -52,12 +47,12 @@ class Core {
             try {
 
                 $this->log('Running module: ' . $moduleName);
-                $this->log('Module config settings:');
-                $this->log($config);
-                die;
+                //$this->log('Module config settings:');
+                //$this->log($config);
 
                 // use the class param for autoloading
-                $module = new $config['class']($config['config'], $this->loader);
+                $class = '\\Rebuilder\\Modules\\' . $config['class'];
+                $module = new $class($config['config'], $this->loader);
 
                 // trigger running of the module
                 $module->run();

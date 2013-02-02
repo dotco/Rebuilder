@@ -171,6 +171,7 @@ class Loader {
      */
     public function updateConfig($modules)
     {
+        $this->log('Updating module loader configuration with user supplied values.');
         $this->_modules = $this->_mergeModuleConfig($this->_modules, $modules);
     }
 
@@ -199,7 +200,7 @@ class Loader {
 
         foreach ($it as $file) {
             $config = include_once($file->getPathname());
-            if (!isset($this->_modules[$config['name']])) {
+            if (empty($this->_modules[$config['name']])) {
                 $this->log('Initial module config import: ' . $config['name']);
                 $this->_modules[$config['name']] = $config;
             } else {
@@ -225,6 +226,7 @@ class Loader {
     protected function _mergeModuleConfig($default, $override)
     {
         foreach ($override as $k => $v) {
+            $this->log('Overriding ' . $k);
             if (isset($default[$k]) && is_array($v)) {
                 $default[$k] = $this->_mergeModuleConfig($default[$k], $override[$k]);
             } else {
