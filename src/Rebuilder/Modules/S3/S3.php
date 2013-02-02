@@ -40,7 +40,7 @@ namespace Rebuilder\Modules;
 * @link		https://github.com/tpyo/amazon-s3-php-class
 * @version 	0.5.0-dev
 */
-class S3 implements ModulesAbstract {
+class S3 extends ModulesAbstract {
 
 	// ACL flags
 	const ACL_PRIVATE = 'private';
