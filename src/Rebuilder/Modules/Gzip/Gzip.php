@@ -124,8 +124,8 @@ class Gzip extends ModulesAbstract {
 		// return files
 		$files = array();
 
-		$it = new RecursiveIteratorIterator(
-			new RecursiveDirectoryIterator($dir, FilesystemIterator::KEY_AS_PATHNAME)
+		$it = new \RecursiveIteratorIterator(
+			new \RecursiveDirectoryIterator($dir, \FilesystemIterator::KEY_AS_PATHNAME)
 		);
 
 		foreach ($it as $dir => $info) {
