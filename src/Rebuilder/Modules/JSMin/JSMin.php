@@ -164,7 +164,7 @@ class JSMin extends ModulesAbstract {
 		}
 
 		if (!empty($config['combine_files'])) {
-			$this->_combineFiles = TRUE;
+			$this->_combine_files = TRUE;
 		}
     }
 
@@ -382,7 +382,7 @@ class JSMin extends ModulesAbstract {
 	}
 
 	/**
-	 * Handles find and replace in CSS files.
+	 * Handles find and replace in JS files.
 	 *
 	 * @access	public
 	 * @param	string	$contents

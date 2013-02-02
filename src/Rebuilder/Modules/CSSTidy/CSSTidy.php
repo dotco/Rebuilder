@@ -20,6 +20,14 @@ use \Exception as Exception;
 class CSSTidy extends ModulesAbstract {
 
 	/**
+	 * Whether to combine JS files into a single file without any form
+	 * of minification. The combined files will take the output_file name
+	 * and end with ".compressed.js" as opposed to ".min.js"
+	 * @var	bool
+	 */
+	private $_combine_files = FALSE;
+
+	/**
 	 * Whether you want to output CSS on a single line or multiple lines. This
 	 * must be manually changed by you depending on your preference.
 	 * @var	bool
@@ -117,7 +125,7 @@ class CSSTidy extends ModulesAbstract {
 		}
 
 		if (!empty($config['combine_files'])) {
-			$this->_combineFiles = TRUE;
+			$this->_combine_files = TRUE;
 		}
 	}
 
@@ -318,7 +326,7 @@ class CSSTidy extends ModulesAbstract {
 
 		// if no errors, write to the output file
 		if (!empty($output)) {
-			$this->log('[JSMin] Files combined into single string.');
+			$this->log('[CSSTidy] Files combined into single string.');
 			if (isset($this->output_file)) {
 				// determine the combined filename based on the output filename
 				$filename =

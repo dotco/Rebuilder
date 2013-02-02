@@ -82,11 +82,11 @@ class Bundler extends ModulesAbstract {
 	{
         // iterate over bundles to perform creation
         foreach ($this->bundles as $bundle => $options) {
-            if (!empty($options['js'])) {
+            if (!empty($options['js']['files'])) {
                 $this->createJsBundle($bundle, $options['js']);
             }
 
-            if (!empty($options['css'])) {
+            if (!empty($options['css']['files'])) {
                 $this->createCssBundle($bundle, $options['css']);
             }
         }
