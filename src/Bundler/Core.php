@@ -158,7 +158,7 @@ class Core {
 	 * @param	mixed	$bundle
 	 * @return	void
 	 */
-	public static function js(array $bundle)
+	public static function js($bundle)
 	{
 		if (is_array($bundle)) {
 			// handle bundle params
