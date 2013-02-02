@@ -37,105 +37,38 @@ if (!empty($options['action']) || !empty($options['a'])) {
     $action = explode(',', $action);
     $action = array_map('trim', $action);
 
+    // check for type
+    $type = !empty($options['type'])
+        ? $options['type']
+        : (!empty($options['t'])
+            ? $options['t']
+            : NULL);
+
+    if (!empty($type)) {
+        $type = explode(',', $type);
+        $type = array_map('trim', $type);
+    }
+
+
     // iterate over all actions to add to module
     foreach ($action as $a) {
 
-        // check for module action config options from file
-        $modules = array_merge($modules, array(
-            $a => isset($config[$a]) ? $config[$a] : array()
-        ));
+        // get copy of config
+        $config = array($a => isset($config[$a]) ? $config[$a] : array());
 
-        /*
-        switch ($a) {
-
-            case 'bundler':
-                $modules = array_merge($modules, array(
-                    'bundler' => isset($config['bundler']) ? $config['bundler'] : array()
-                ));
-                break;
-
-            case 'css':
-
-
-                $modules = array_merge($modules, array(
-                    'csstidy' => array(
-                        'enabled' => TRUE,
-                        'config' => array(
-                            'basepath' => PUBLIC_PATH,
-                            'multi_line' => TRUE,
-                            'files' => $config['css'],
-                            'output_file' => $config['cssmin']
-                        )
-                    )
-                ));
-                break;
-
-            case 'js':
-                $modules = array_merge($modules, array(
-                    'jsmin' => array(
-
-                        'enabled' => TRUE,
-                        'config' => array(
-                            'basepath' => PUBLIC_PATH,
-                            'files' => $config['js'],
-                            'output_file' => $config['jsmin']
-                        )
-                    )
-                ));
-                break;
-
-            case 's3':
-                $cnf = $config['amazon'];
-
-                // check for type
-                $type = !empty($options['type'])
-                    ? $options['type']
-                    : (!empty($options['t'])
-                        ? $options['t']
-                        : NULL);
-
-                if (!empty($type)) {
-                    $type = explode(',', $type);
-                    $type = array_map('trim', $type);
-                    $cnf['type'] = $type;
-                }
-
-                $modules = array_merge($modules, array(
-                    's3' => array(
-                        'class' => 'S3',
-                        'enabled' => TRUE,
-                        'config' => $cnf
-                    )
-                ));
-                break;
-
-            case 'gzip':
-                $cnf = $config['amazon'];
-
-                // check for type
-                $type = !empty($options['type'])
-                    ? $options['type']
-                    : (!empty($options['t'])
-                        ? $options['t']
-                        : NULL);
-
-                if (!empty($type)) {
-                    $type = explode(',', $type);
-                    $type = array_map('trim', $type);
-                    $cnf['type'] = $type;
-                }
-
-                $modules = array_merge($modules, array(
-                    'gzip' => array(
-                        'class' => 'Gzip',
-                        'enabled' => TRUE,
-                        'config' => $cnf
-                    )
-                ));
-                break;
-
+        // merge with type, if applicable
+        if (!empty($type)) {
+            if (isset($config['config'])) {
+                $config['config']['type'] = $type;
+            } else {
+                $config['config'] = array(
+                    'type' => $type
+                );
+            }
         }
-        */
+
+        // check for module action config options from file
+        $modules = array_merge($modules, $config);
 
     }
 
