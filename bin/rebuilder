@@ -1,7 +1,7 @@
 #!/usr/bin/php
 <?php
 // load the composer autoloader
-require_once('../composer/autoload.php');
+require_once('../autoload.php');
 
 // check for params
 $options = getopt('c:e::m:t:', array('config:', 'env::', 'modules:', 'type:'));
