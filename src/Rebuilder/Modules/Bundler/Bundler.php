@@ -108,10 +108,9 @@ class Bundler implements ModulesAbstract {
         // merge the config with files and override some core options
         $config = $this->js;
 
-        $config['basepath'] = rtrim($config['basepath'], '/') . '/bundles/';
         $config['files'] = $options['files'];
+        $config['output_path'] = rtrim($config['basepath'], '/') . '/bundles/';
         $config['output_file'] = $bundle . '.js';
-        $config['combine_files'] = TRUE;
 
         $class = new \Rebuilder\Modules\JSMin($config);
         $class->run();
@@ -129,10 +128,9 @@ class Bundler implements ModulesAbstract {
         // merge the config with files
         $config = $this->js;
 
-        $config['basepath'] = rtrim($config['basepath'], '/') . '/bundles/';
         $config['files'] = $options['files'];
+        $config['output_path'] = rtrim($config['basepath'], '/') . '/bundles/';
         $config['output_file'] = $bundle . '.css';
-        $config['combine_files'] = TRUE;
 
         $class = new \Rebuilder\Modules\CSSTidy($config);
         $class->run();
