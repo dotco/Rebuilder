@@ -2,7 +2,7 @@
 <?php
 // load the composer autoloader
 // backtrack from /vendor/dotco/rebuilder/bin/rebuilder to /vendor/
-require_once('../../../autoload.php');
+require_once(__DIR__ . '/../../../autoload.php');
 
 // check for params
 $options = getopt('c:e::m:t:', array('config:', 'env::', 'modules:', 'type:'));
