@@ -245,7 +245,7 @@ class Loader {
             }
         }
 
-        throw new Exception(
+        throw new \Exception(
             'The class you have requested, ' . $className . ', could not be found.'
         );
     }
