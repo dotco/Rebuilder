@@ -113,7 +113,7 @@ class S3 extends ModulesAbstract {
 
 		// we need a bucket, else throw exception
 		if (empty($config['bucket'])) {
-			throw new Exception('You must specify a target bucket.');
+			throw new \Exception('You must specify a target bucket.');
 		}
 		self::$bucket = $config['bucket'];
 
@@ -255,7 +255,7 @@ class S3 extends ModulesAbstract {
 						error_log('Skipping file: ' . $f['bucketPath']);
 					}
 
-				} catch (Exception $e) {
+				} catch (\Exception $e) {
 					error_log(print_r($e->getMessage(), true));
 				}
 			}

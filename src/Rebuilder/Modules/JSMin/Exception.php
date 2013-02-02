@@ -1,2 +1,4 @@
 <?php
-class JSMin_Exception extends Exception {}
+namespace Rebuilder\Modules\JSMin;
+
+class Exception extends \Exception {}

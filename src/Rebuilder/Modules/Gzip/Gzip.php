@@ -102,7 +102,7 @@ class Gzip extends ModulesAbstract {
                     error_log('Gzipping file: ' . $newPath);
                     shell_exec('gzip -9 -c ' . $f['filepath'] . ' > ' . $newPath);
 
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
                     error_log($e->getMessage());
                 }
             }

@@ -542,7 +542,7 @@ class JSMin extends ModulesAbstract {
 
             //if (ord($this->a) <= self::ORD_LF) {
             if ($this->a === null) {
-              throw new JSMin_Exception("Unterminated string literal.\n\n" . $this->debugStr);
+              throw new \Rebuilder\Modules\JSMin\Exception("Unterminated string literal.\n\n" . $this->debugStr);
             }
 
             if ($this->a === '\\') {
@@ -583,7 +583,7 @@ class JSMin extends ModulesAbstract {
                   $this->a       = $this->get();
                 //} elseif (ord($this->a) <= self::ORD_LF) {
                 } elseif ($this->a === null) {
-                  throw new JSMin_Exception("Unterminated set in Regular Expression literal.\n\n" . $this->debugStr);
+                  throw new \Rebuilder\Modules\JSMin\Exception("Unterminated set in Regular Expression literal.\n\n" . $this->debugStr);
                 }
               }
             } elseif ($this->a === '/') {
@@ -593,7 +593,7 @@ class JSMin extends ModulesAbstract {
               $this->a       = $this->get();
             //} elseif (ord($this->a) <= self::ORD_LF) {
             } elseif ($this->a === null) {
-              throw new JSMin_Exception("Unterminated Regular Expression literal.\n\n" . $this->debugStr);
+              throw new \Rebuilder\Modules\JSMin\Exception("Unterminated Regular Expression literal.\n\n" . $this->debugStr);
             }
 
             $this->output .= $this->a;
@@ -785,7 +785,7 @@ class JSMin extends ModulesAbstract {
                 break;
 
               case null:
-                throw new JSMin_Exception("Unterminated comment:\n\n" . $this->debugStr);
+                throw new \Rebuilder\Modules\JSMin\Exception("Unterminated comment:\n\n" . $this->debugStr);
             }
           }
 
