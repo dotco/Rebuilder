@@ -93,7 +93,7 @@ class Core {
 
 			// assume we load a file and not something out of the bundle dir
 			$path = $bundle['name'];
-			$dir = rtrim(dirname($bundle['name']), '/');
+			$dir = rtrim(dirname($bundle['name']), '/') . '/';
 
 			if (strpos($bundle['name'], '.css') !== FALSE) {
 				$bundle = basename($bundle['name'], '.css');
@@ -169,7 +169,7 @@ class Core {
 
 			// assume we load a file and not something out of the bundle dir
 			$path = $bundle['name'];
-			$dir = rtrim(dirname($bundle['name']), '/');
+			$dir = rtrim(dirname($bundle['name']), '/') . '/';
 
 			if (strpos($bundle['name'], '.js') !== FALSE) {
 				$bundle = basename($bundle['name'], '.js');
