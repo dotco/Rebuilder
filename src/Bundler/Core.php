@@ -175,8 +175,11 @@ class Core {
 
 			if (isset(self::$s3['enabled']) && self::$s3['enabled'] === TRUE) {
 				if (isset(self::$gzip['enabled']) && self::$gzip['enabled'] === TRUE) {
-					if (strpos($path, '.gz.js') === FALSE) {
-						$filename .= '.gz';
+					// ensure the user can handle gzipped files
+					if (isset($_SERVER['HTTP_ACCEPT_ENCODING']) && strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') !== false) {
+						if (strpos($path, '.gz.js') === FALSE) {
+							$filename .= '.gz';
+						}
 					}
 				}
 
