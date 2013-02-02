@@ -191,6 +191,12 @@ class JSMin extends ModulesAbstract {
 			if (!empty($compressed)) {
 				$this->log('[JSMin] Files compressed.');
 				if (isset($this->output_file)) {
+					// generate minified filename
+					$filename =
+						dirname($this->output_file) . DIRECTORY_SEPARATOR
+						. basename($this->output_file, '.js')
+						. '.min.js';
+
 					if (file_put_contents($this->output_file, $compressed)) {
 						$this->log('[JSMin] Files saved to output file ' . $this->output_file . '.');
 					}

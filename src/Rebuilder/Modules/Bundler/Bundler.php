@@ -90,6 +90,56 @@ class Bundler extends ModulesAbstract {
                 $this->createCssBundle($bundle, $options['css']);
             }
         }
+
+        // minify and combine all other CSS files
+        $files = $this->_findFilesRecursive($this->csstidy['basepath'], array('.css'));
+        foreach ($files as $file) {
+            // don't deal with already minified or compressed files
+            if (strpos($file['filename'], '.min.css') !== FALSE) {
+                continue;
+            } else if (strpos($file['filename'], '.compressed.css') !== FALSE) {
+                continue;
+            } else if (strpos($file['filename'], '.gz.css') !== FALSE) {
+                continue;
+            }
+
+            // send through CSSTidy
+            $class = new \Rebuilder\Modules\CSSTidy(
+                array(
+                    'combine_files' => FALSE,
+                    'basepath' => $this->csstidy['basepath'],
+                    'output_path' => dirname($file['filepath']),
+                    'output_file' => $file['filename']
+                )
+            );
+
+            $class->run();
+        }
+
+        // minify and combine all other JS files
+        $files = $this->_findFilesRecursive($this->jsmin['basepath'], array('.js'));
+        foreach ($files as $file) {
+            // don't deal with already minified or compressed files
+            if (strpos($file['filename'], '.min.js') !== FALSE) {
+                continue;
+            } else if (strpos($file['filename'], '.compressed.js') !== FALSE) {
+                continue;
+            } else if (strpos($file['filename'], '.gz.js') !== FALSE) {
+                continue;
+            }
+
+            // send through JSMin
+            $class = new \Rebuilder\Modules\JSMin(
+                array(
+                    'combine_files' => FALSE,
+                    'basepath' => $this->jsmin['basepath'],
+                    'output_path' => dirname($file['filepath']),
+                    'output_file' => $file['filename']
+                )
+            );
+
+            $class->run();
+        }
     }
 
     /**
@@ -179,5 +229,57 @@ class Bundler extends ModulesAbstract {
             $configOverride
         );
     }
+
+	/**
+	 * Handles recursively finding files in a directory matching a given extension
+	 * or extensions.
+	 *
+	 * @access	protected
+	 * @param	string		$dir
+	 * @param	array		$ext
+	 * @return	array
+	 */
+	protected function _findFilesRecursive($dir, $ext = array())
+	{
+		// return files
+		$files = array();
+
+		$it = new \RecursiveIteratorIterator(
+			new \RecursiveDirectoryIterator($dir, \FilesystemIterator::KEY_AS_PATHNAME)
+		);
+
+		foreach ($it as $dir => $info) {
+			if ($info->isDir()) {
+				continue;
+			}
+
+			$fileExt = '.' . strtolower($info->getExtension());
+			if (!in_array($fileExt, (array) $ext)) {
+				continue;
+			}
+
+			// get the full path
+			$filepath = $info->getPathname();
+			$bucketPath = $filepath;
+			if (!empty(self::$baseDir)) {
+				$bucketPath = str_replace(self::$baseDir, '', $bucketPath);
+				$bucketPath = ltrim($bucketPath, '/');
+				if (!empty(self::$uriPrefix)) {
+					$bucketPath = self::$uriPrefix . $bucketPath;
+				}
+			}
+
+			$files[] = array(
+				'extension' => strtolower($info->getExtension()),
+				'filename' => $info->getFilename(),
+				'filesize' => $info->getSize(),
+				'filepath' => $filepath,
+				'bucketPath' => $bucketPath,
+				'lastModified' => $info->getMTime()
+			);
+		}
+
+		return $files;
+	}
 
 }

@@ -7,8 +7,8 @@ use \Exception as Exception;
  * CSS files. Intended to be used as a module within the Rebuilder PHP class
  * for performing CLI based asset management.
  *
- * Credit goes to the original author, JR. His blog post and
- * additional documentation on this class can be found at:
+ * Credit goes to the original author, JR. His blog post and additional
+ * documentation on this class can be found at:
  *
  * http://www.if-not-true-then-false.com/2009/css-compression-with-own-php-class-vs-csstidy/
  *
@@ -26,6 +26,11 @@ class CSSTidy extends ModulesAbstract {
 	 * @var	bool
 	 */
 	private $_combine_files = FALSE;
+
+	/**
+	 * Whether to minify the files
+	 */
+	private $_minify_files = FALSE;
 
 	/**
 	 * Whether you want to output CSS on a single line or multiple lines. This
@@ -152,6 +157,12 @@ class CSSTidy extends ModulesAbstract {
 			if (!empty($compressed)) {
 				$this->log('[CSSTidy] Files compressed.');
 				if (isset($this->output_file)) {
+					// generate minified filename
+					$filename =
+						dirname($this->output_file) . DIRECTORY_SEPARATOR
+						. basename($this->output_file, '.css')
+						. '.min.css';
+					
 					if (file_put_contents($this->output_file, $compressed)) {
 						$this->log('[CSSTidy] Files saved to output file ' . $this->output_file . '.');
 					}
