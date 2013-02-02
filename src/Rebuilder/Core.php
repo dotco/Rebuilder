@@ -43,11 +43,13 @@ class Core {
         // iterate over each queued module, load, and run
         $modules = $this->loader->getModules();
         foreach ($modules as $moduleName => $config) {
+            /*
             // skip if module not enabled
             if (!isset($config['enabled']) || $config['enabled'] === FALSE) {
                 $this->log('Module ' . $moduleName . ' not enabled. Skipping.');
                 continue;
             }
+            */
 
             try {
 
