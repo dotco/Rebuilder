@@ -92,7 +92,8 @@ if (!empty($options['modules']) || !empty($options['m'])) {
             die('No configuration settings found for module ' . $m . '. Did you specify an environment?');
         }
 
-        $modConfig = array($m =>$config[$m]);
+        $modConfig = array($m => $config[$m]);
+        $modConfig[$m]['enabled'] = true;
         if (!isset($modConfig['config'])) {
             $modConfig['config'] = array();
         }
