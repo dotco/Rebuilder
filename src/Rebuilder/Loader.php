@@ -72,13 +72,12 @@ class Loader {
      * Attempt to load custom modules.
      *
      * @access  public
-     * @param   string|array    $customPaths
      * @return  void
      */
-    public function loadCustom($customPaths)
+    public function loadCustom()
     {
-        if (!empty($customPaths)) {
-            foreach ((array) $customPaths as $path) {
+        if (!empty($this->_customModulePaths)) {
+            foreach ((array) $this->_customModulePaths as $path) {
                 $this->_loadModulesFromDirectory($path);
             }
         }
