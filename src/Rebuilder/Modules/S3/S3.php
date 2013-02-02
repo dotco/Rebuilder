@@ -41,7 +41,7 @@ namespace Rebuilder\Modules;
 * @version 	0.5.0-dev
 */
 class S3 implements ModulesAbstract {
-	
+
 	// ACL flags
 	const ACL_PRIVATE = 'private';
 	const ACL_PUBLIC_READ = 'public-read';
@@ -288,32 +288,20 @@ class S3 implements ModulesAbstract {
 	 */
 	protected function _findFilesRecursive($dir, $ext = array())
 	{
-		// turn file extensions into regex
-		$ext = str_replace('.', '\.', $ext);
-		$ext = implode('|', $ext);
-		$regex = '#(?<!/)(' . $ext . ')$|^[^\.]*$#i';
-
 		// return files
 		$files = array();
 
-		// create the iterator
-		$it =
-		new RecursiveIteratorIterator(
-			new RecursiveRegexIterator(
-				new RecursiveDirectoryIterator(
-					$dir,
-					RecursiveDirectoryIterator::KEY_AS_PATHNAME
-				),
-				$regex,
-				RegexIterator::MATCH
-			),
-			RecursiveIteratorIterator::SELF_FIRST
+		$it = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator($dir, FilesystemIterator::KEY_AS_PATHNAME)
 		);
 
-		// iterate over dir
 		foreach ($it as $dir => $info) {
-			// skip directories
 			if ($info->isDir()) {
+				continue;
+			}
+
+			$fileExt = '.' . strtolower($info->getExtension());
+			if (!in_array($fileExt, (array) $ext)) {
 				continue;
 			}
 
