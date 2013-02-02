@@ -28,7 +28,7 @@ namespace Rebuilder\Modules;
  * @author		Corey Ballou <corey@go.co>
  * @link		http://github.com/dotco/Rebuilder
  */
-class Bundler implements ModulesAbstract {
+class Bundler extends ModulesAbstract {
 
     /**
      * The instantiated Rebuilder module loader.

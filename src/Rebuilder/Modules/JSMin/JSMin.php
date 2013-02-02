@@ -49,7 +49,7 @@ namespace Rebuilder\Modules;
  * @link https://github.com/rgrove/jsmin-php
  */
 
-class JSMin implements ModulesAbstract {
+class JSMin extends ModulesAbstract {
 
     const ORD_LF            = 10;
     const ORD_SPACE         = 32;

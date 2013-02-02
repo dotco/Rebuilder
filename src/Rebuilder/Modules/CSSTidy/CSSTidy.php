@@ -16,7 +16,7 @@ namespace Rebuilder\Modules;
  * @author		Corey Ballou <corey@go.co>
  * @link		http://github.com/cballou
  */
-class CSSTidy implements ModulesAbstract {
+class CSSTidy extends ModulesAbstract {
 
 	/**
 	 * Whether you want to output CSS on a single line or multiple lines. This

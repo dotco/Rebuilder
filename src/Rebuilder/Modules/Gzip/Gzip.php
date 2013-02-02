@@ -14,7 +14,7 @@ namespace Rebuilder\Modules;
  * @author		Corey Ballou <corey@go.co>
  * @link		http://github.com/cballou
  */
-class Gzip implements ModulesAbstract {
+class Gzip extends ModulesAbstract {
 
 	/**
 	 * The CSS directory we use for outputting gzipped files.
