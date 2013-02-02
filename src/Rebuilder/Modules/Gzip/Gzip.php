@@ -120,45 +120,22 @@ class Gzip implements ModulesAbstract {
 	 */
 	protected function _findFilesRecursive($dir, $ext = array())
 	{
-        // base extensions
-        $baseExts = $ext;
-
-		// turn file extensions into regex
-		$ext = str_replace('.', '\.', $ext);
-		$ext = implode('|', $ext);
-		$regex = '#(?<!/)(' . $ext . ')$|^[^\.]*$#i';
-
 		// return files
 		$files = array();
 
-		// create the iterator
-		$it =
-		new RecursiveIteratorIterator(
-			new RecursiveRegexIterator(
-				new RecursiveDirectoryIterator(
-					$dir,
-					RecursiveDirectoryIterator::KEY_AS_PATHNAME
-				),
-				$regex,
-				RegexIterator::MATCH
-			),
-			RecursiveIteratorIterator::SELF_FIRST
+		$it = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator($dir, FilesystemIterator::KEY_AS_PATHNAME)
 		);
 
-		// iterate over dir
 		foreach ($it as $dir => $info) {
-			// skip directories
 			if ($info->isDir()) {
 				continue;
 			}
 
-            // skip files that have already been gzipped
-            foreach ($baseExts as $baseExt) {
-                if (strpos($info->getFilename(), '.gz' . $baseExt)) {
-                    // we don't want to deal with gzipped files
-                    continue 2;
-                }
-            }
+			$fileExt = '.' . strtolower($info->getExtension());
+			if (!in_array($fileExt, (array) $ext)) {
+				continue;
+			}
 
 			// get the full path
 			$filepath = $info->getPathname();
@@ -172,6 +149,7 @@ class Gzip implements ModulesAbstract {
 			}
 
 			$files[] = array(
+				'extension' => strtolower($info->getExtension()),
 				'filename' => $info->getFilename(),
 				'filesize' => $info->getSize(),
 				'filepath' => $filepath,
