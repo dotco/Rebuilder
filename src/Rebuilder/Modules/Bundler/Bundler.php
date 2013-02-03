@@ -127,6 +127,8 @@ class Bundler extends ModulesAbstract {
         }
 
         $config['files'] = $files;
+        $config['combine_files'] = true;
+        $config['minify_files'] = true;
         $config['output_path'] =
             rtrim($config['basepath'], '/') . rtrim($config['relpath'], '/') . '/bundles/';
         $config['output_file'] = $bundle . '.js';
@@ -156,6 +158,8 @@ class Bundler extends ModulesAbstract {
         }
 
         $config['files'] = $files;
+        $config['combine_files'] = true;
+        $config['minify_files'] = true;
         $config['output_path'] =
             rtrim($config['basepath'], '/') . rtrim($config['relpath'], '/') . '/bundles/';
         $config['output_file'] = $bundle . '.css';
