@@ -177,7 +177,8 @@ class Bundler extends ModulesAbstract {
     public function combineMinifyCSS()
     {
         // minify and combine all other CSS files
-        $files = $this->_findFilesRecursive($this->csstidy['basepath'], array('.css'));
+        $basepath = rtrim($this->csstidy['basepath'], '/') . rtrim($this->csstidy['relpath'], '/');
+        $files = $this->_findFilesRecursive($basepath, array('.css'));
         foreach ($files as $file) {
             // don't deal with already minified or compressed files
             if (strpos($file['filename'], '.min.css') !== FALSE) {
@@ -214,7 +215,8 @@ class Bundler extends ModulesAbstract {
     public function combineMinifyJS()
     {
         // minify and combine all other JS files
-        $files = $this->_findFilesRecursive($this->jsmin['basepath'], array('.js'));
+        $basepath = rtrim($this->jsmin['basepath'], '/') . rtrim($this->jsmin['relpath'], '/');
+        $files = $this->_findFilesRecursive($basepath, array('.js'));
         foreach ($files as $file) {
             // don't deal with already minified or compressed files
             if (strpos($file['filename'], '.min.js') !== FALSE) {
