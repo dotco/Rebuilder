@@ -19,6 +19,9 @@ use \Exception as Exception;
  */
 class CSSTidy extends ModulesAbstract {
 
+	const MINIFY_SUFFIX		= 'min';
+	const COMBINE_SUFFIX	= 'compressed';
+
 	/**
 	 * Whether to combine CSS files into a single file without any form
 	 * of minification. The combined files will take the output_file name
