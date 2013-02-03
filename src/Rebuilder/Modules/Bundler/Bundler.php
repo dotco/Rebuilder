@@ -55,6 +55,12 @@ class Bundler extends ModulesAbstract {
      */
     public $jsmin = array();
 
+    /**
+     * The public directory to the media files.
+     * @var string
+     */
+    private $public_dir;
+
 	/**
 	 * Default constructor for setting up configuration options.
 	 *
@@ -112,7 +118,14 @@ class Bundler extends ModulesAbstract {
         // merge the config with files and override some core options
         $config = $this->jsmin;
 
-        $config['files'] = $options['files'];
+        // add the public directory
+        $files = $options['files'];
+        foreach ($files as $k => $v) {
+            $files[$k] = rtrim($this->public_dir, DIRECTORY_SEPARATOR) .
+                DIRECTORY_SEPARATOR . ltrim($v, DIRECTORY_SEPARATOR);
+        }
+
+        $config['files'] = $files;
         $config['output_path'] = rtrim($config['basepath'], '/') . '/bundles/';
         $config['output_file'] = $bundle . '.js';
 
@@ -132,7 +145,14 @@ class Bundler extends ModulesAbstract {
         // merge the config with files
         $config = $this->csstidy;
 
-        $config['files'] = $options['files'];
+        // add the public directory
+        $files = $options['files'];
+        foreach ($files as $k => $v) {
+            $files[$k] = rtrim($this->public_dir, DIRECTORY_SEPARATOR) .
+                DIRECTORY_SEPARATOR . ltrim($v, DIRECTORY_SEPARATOR);
+        }
+
+        $config['files'] = $files;
         $config['output_path'] = rtrim($config['basepath'], '/') . '/bundles/';
         $config['output_file'] = $bundle . '.css';
 
@@ -140,6 +160,12 @@ class Bundler extends ModulesAbstract {
         $class->run();
     }
 
+    /**
+     * Handles combining and minifying the CSS files.
+     *
+     * @access  public
+     * @return  void
+     */
     public function combineMinifyCSS()
     {
         // minify and combine all other CSS files
@@ -171,6 +197,12 @@ class Bundler extends ModulesAbstract {
         }
     }
 
+    /**
+     * Handles combining and minifying the JS files.
+     *
+     * @access  public
+     * @return  void
+     */
     public function combineMinifyJS()
     {
         // minify and combine all other JS files
