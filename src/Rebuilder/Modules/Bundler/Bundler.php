@@ -91,61 +91,8 @@ class Bundler extends ModulesAbstract {
             }
         }
 
-        // minify and combine all other CSS files
-        $files = $this->_findFilesRecursive($this->csstidy['basepath'], array('.css'));
-        foreach ($files as $file) {
-            // don't deal with already minified or compressed files
-            if (strpos($file['filename'], '.min.css') !== FALSE) {
-                continue;
-            } else if (strpos($file['filename'], '.compressed.css') !== FALSE) {
-                continue;
-            } else if (strpos($file['filename'], '.gz.css') !== FALSE) {
-                continue;
-            }
-
-            // send through CSSTidy
-            $class = new \Rebuilder\Modules\CSSTidy(
-                array(
-                    'force_rebuild' => TRUE,
-                    'minify_files' => TRUE,
-                    'combine_files' => TRUE,
-                    'basepath' => $this->csstidy['basepath'],
-                    'output_path' => dirname($file['filepath']),
-                    'output_file' => $file['filename'],
-                    'files' => array($file['filename'])
-                )
-            );
-
-            $class->run();
-        }
-
-        // minify and combine all other JS files
-        $files = $this->_findFilesRecursive($this->jsmin['basepath'], array('.js'));
-        foreach ($files as $file) {
-            // don't deal with already minified or compressed files
-            if (strpos($file['filename'], '.min.js') !== FALSE) {
-                continue;
-            } else if (strpos($file['filename'], '.compressed.js') !== FALSE) {
-                continue;
-            } else if (strpos($file['filename'], '.gz.js') !== FALSE) {
-                continue;
-            }
-
-            // send through JSMin
-            $class = new \Rebuilder\Modules\JSMin(
-                array(
-                    'force_rebuild' => TRUE,
-                    'combine_files' => TRUE,
-                    'minify_files' => TRUE,
-                    'basepath' => $this->jsmin['basepath'],
-                    'output_path' => dirname($file['filepath']),
-                    'output_file' => $file['filename'],
-                    'files' => array($file['filename'])
-                )
-            );
-
-            $class->run();
-        }
+        $this->combineMinifyCSS();
+        $this->combineMinifyJS();
     }
 
     /**
@@ -191,6 +138,68 @@ class Bundler extends ModulesAbstract {
 
         $class = new \Rebuilder\Modules\CSSTidy($config);
         $class->run();
+    }
+
+    public function combineMinifyCSS()
+    {
+        // minify and combine all other CSS files
+        $files = $this->_findFilesRecursive($this->csstidy['basepath'], array('.css'));
+        foreach ($files as $file) {
+            // don't deal with already minified or compressed files
+            if (strpos($file['filename'], '.min.css') !== FALSE) {
+                continue;
+            } else if (strpos($file['filename'], '.compressed.css') !== FALSE) {
+                continue;
+            } else if (strpos($file['filename'], '.gz.css') !== FALSE) {
+                continue;
+            }
+
+            // send through CSSTidy
+            $class = new \Rebuilder\Modules\CSSTidy(
+                array(
+                    'force_rebuild' => TRUE,
+                    'minify_files' => TRUE,
+                    'combine_files' => TRUE,
+                    'basepath' => $this->csstidy['basepath'],
+                    'output_path' => dirname($file['filepath']),
+                    'output_file' => $file['filename'],
+                    'files' => array($file['filename'])
+                )
+            );
+
+            $class->run();
+        }
+    }
+
+    public function combineMinifyJS()
+    {
+        // minify and combine all other JS files
+        $files = $this->_findFilesRecursive($this->jsmin['basepath'], array('.js'));
+        foreach ($files as $file) {
+            // don't deal with already minified or compressed files
+            if (strpos($file['filename'], '.min.js') !== FALSE) {
+                continue;
+            } else if (strpos($file['filename'], '.compressed.js') !== FALSE) {
+                continue;
+            } else if (strpos($file['filename'], '.gz.js') !== FALSE) {
+                continue;
+            }
+
+            // send through JSMin
+            $class = new \Rebuilder\Modules\JSMin(
+                array(
+                    'force_rebuild' => TRUE,
+                    'combine_files' => TRUE,
+                    'minify_files' => TRUE,
+                    'basepath' => $this->jsmin['basepath'],
+                    'output_path' => dirname($file['filepath']),
+                    'output_file' => $file['filename'],
+                    'files' => array($file['filename'])
+                )
+            );
+
+            $class->run();
+        }
     }
 
     /**

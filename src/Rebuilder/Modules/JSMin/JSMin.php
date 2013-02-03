@@ -149,25 +149,26 @@ class JSMin extends ModulesAbstract {
    */
     public function __construct($config = array()) //$input)
     {
-		// check for the base full path to the files
-		if (!empty($config['basepath']) && is_dir($config['basepath'])) {
-			$this->basepath = $config['basepath'];
-		}
-
-		// there's the potential for output_path to override basepath
-		// when we have single file compression and minification
-		if (!empty($config['output_path']) && is_dir($config['output_path'])) {
-			$this->output_path = $config['output_path'];
-		} else if ($this->basepath) {
-			$this->output_path = $this->basepath;
-		}
-		$this->log('[JSMin] Set output_path to: ' . $this->output_path);
-
-		if (!is_writable($this->output_path)) {
+		if (empty($config['output_path'])) {
+			$this->log('[JSMin] You must specify an output_path.');
+			$this->log('[JSMin] Skipping minification');
+			return false;
+		} else if (!is_dir($config['output_path'])) {
+			$this->log('[JSMin] The output_path does not exist: ' . $config['output_path']);
+			$this->log('[JSMin] Skipping minification');
+			return false;
+		} else if (!is_writable($config['output_path'])) {
 			$this->log('[JSMin] Output path not writable: ' . $this->output_path);
 			$this->log('[JSMin] Skipping minification');
 			return false;
+		} else if (empty($config['basepath']) || !is_dir($config['basepath'])) {
+			$this->log('[JSMin] Basepath doesnt exist: ' . $this->output_path);
+			$this->log('[JSMin] Skipping minification');
+			return false;
 		}
+
+		$this->output_path = $config['output_path'];
+		$this->basepath = $config['basepath'];
 
 		if (!empty($config['find_replace']) && is_array($config['find_replace'])) {
 			$this->find_replace = $config['find_replace'];
@@ -304,6 +305,16 @@ class JSMin extends ModulesAbstract {
 	 */
 	public function addFile($file)
 	{
+		if (empty($file)) {
+			$this->log('[JSMin] Filename cant be empty.');
+			return false;
+		}
+
+		if (strpos($file, '//') === 0) {
+			$file = 'http:' . $file;
+		}
+
+		/*
 		// handle adding the output_path to the file
 		if (!empty($this->output_path)
 			&& strpos($file, 'http') === false
@@ -314,19 +325,24 @@ class JSMin extends ModulesAbstract {
 		} else if (strpos($file, '//') === 0) {
             $file = 'http:' . $file;
         }
+		*/
 
-		if ($file != null
-            && $file != ""
-			&& substr(strrchr($file, '.'), 1) == "js"
-			&& is_file($file)
-			&& is_readable($file)
-		) {
-			$this->files[] = $file;
-			$this->log('[JSMin] Added file ' . $file . '.');
-			return true;
+		if (substr(strrchr($file, '.'), 1) == "js") {
+			if (is_file($file) && is_readable($file)) {
+				$this->files[] = $file;
+				$this->log('[JSMin] Added file ' . $file);
+				return true;
+			} else if (strpos($file, 'http') === 0) {
+				// sucks to duplicate, but we need to check
+				if (file_get_contents($file)) {
+					$this->files[] = $file;
+					$this->log('[JSMin] Added file ' . $file);
+					return true;
+				}
+			}
 		}
 
-		$this->log('[JSMin] Could not add file ' . $file . '.');
+		$this->log('[JSMin] Could not add file ' . $file);
 		if (substr(strrchr($file, '.'), 1) != "js") {
 			$this->log('[JSMin] Reason: File does not end in .js');
 		} else if (!is_file($file)) {

@@ -47,13 +47,6 @@ class CSSTidy extends ModulesAbstract {
 	private $multi_line = TRUE;
 
 	/**
-	 * The base directory to the application public directory. Should be a full
-	 * path. Used for concatting with the individual file assets.
-	 * @var	string
-	 */
-	private $basepath;
-
-	/**
 	 * The path to the output file.
 	 * @var	string
 	 */
@@ -105,25 +98,26 @@ class CSSTidy extends ModulesAbstract {
 	 */
 	public function __construct($config = array())
 	{
-		// check for the base full path to the files
-		if (!empty($config['basepath']) && is_dir($config['basepath'])) {
-			$this->basepath = $config['basepath'];
-		}
-
-		// there's the potential for output_path to override basepath
-		// when we have single file compression and minification
-		if (!empty($config['output_path']) && is_dir($config['output_path'])) {
-			$this->output_path = $config['output_path'];
-		} else if ($this->basepath) {
-			$this->output_path = $this->basepath;
-		}
-		$this->log('[CSSTidy] Set output_path to : ' . $this->output_path);
-
-		if (!is_writable($this->output_path)) {
+		if (empty($config['output_path'])) {
+			$this->log('[CSSTidy] You must specify an output_path.');
+			$this->log('[CSSTidy] Skipping minification');
+			return false;
+		} else if (!is_dir($config['output_path'])) {
+			$this->log('[CSSTidy] The output_path does not exist: ' . $config['output_path']);
+			$this->log('[CSSTidy] Skipping minification');
+			return false;
+		} else if (!is_writable($config['output_path'])) {
 			$this->log('[CSSTidy] Output path not writable: ' . $this->output_path);
 			$this->log('[CSSTidy] Skipping minification');
 			return false;
+		} else if (empty($config['basepath']) || !is_dir($config['basepath'])) {
+			$this->log('[CSSTidy] Basepath doesnt exist: ' . $this->output_path);
+			$this->log('[CSSTidy] Skipping minification');
+			return false;
 		}
+
+		$this->output_path = $config['output_path'];
+		$this->basepath = $config['basepath'];
 
 		if (isset($config['multi_line'])) {
 			$this->multi_line = (bool) $config['multi_line'];
@@ -264,6 +258,16 @@ class CSSTidy extends ModulesAbstract {
 	 */
 	public function addFile($file)
 	{
+		if (empty($file)) {
+			$this->log('[CSSTidy] Filename cant be empty.');
+			return false;
+		}
+
+		if (strpos($file, '//') === 0) {
+			$file = 'http:' . $file;
+		}
+
+		/*
 		// handle adding the output_path to the file
 		if (!empty($this->output_path)
 			&& strpos($file, 'http') === false
@@ -277,18 +281,24 @@ class CSSTidy extends ModulesAbstract {
 		} else if (strpos($file, '//') === 0) {
             $file = 'http:' . $file;
         }
+		*/
 
-		if ($file != null && $file != ""
-			&& substr(strrchr($file, '.'), 1) == "css"
-			&& is_file($file)
-			&& is_readable($file)
-		) {
-			$this->files[] = $file;
-			$this->log('[CSSTidy] Added file ' . $file . '.');
-			return true;
+		if (substr(strrchr($file, '.'), 1) == "css") {
+			if (is_file($file) && is_readable($file)) {
+				$this->files[] = $file;
+				$this->log('[CSSTidy] Added file ' . $file);
+				return true;
+			} else if (strpos($file, 'http') === 0) {
+				// sucks to duplicate, but we need to check
+				if (file_get_contents($file)) {
+					$this->files[] = $file;
+					$this->log('[CSSTidy] Added file ' . $file);
+					return true;
+				}
+			}
 		}
 
-		$this->log('[CSSTidy] Could not add file ' . $file . '.');
+		$this->log('[CSSTidy] Could not add file ' . $file);
 		if (substr(strrchr($file, '.'), 1) != "css") {
 			$this->log('[CSSTidy] Reason: File does not end in .css');
 		} else if (!is_file($file)) {

@@ -226,7 +226,6 @@ class Loader {
     protected function _mergeModuleConfig($default, $override)
     {
         foreach ($override as $k => $v) {
-            $this->log('Overriding ' . $k);
             if (isset($default[$k]) && is_array($v)) {
                 $default[$k] = $this->_mergeModuleConfig($default[$k], $override[$k]);
             } else {
