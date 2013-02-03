@@ -83,6 +83,12 @@ class JSMin extends ModulesAbstract {
 	private $combine_files = FALSE;
 
 	/**
+	 * Whether to minify the files.
+	 * @var	bool
+	 */
+	private $minify_files = FALSE;
+
+	/**
 	 * Triggers forcing a rebuild.
 	 * @var	bool
 	 */
