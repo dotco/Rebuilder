@@ -117,6 +117,7 @@ class CSSTidy extends ModulesAbstract {
 		} else if ($this->basepath) {
 			$this->output_path = $this->basepath;
 		}
+		$this->log('[CSSTidy] Set output_path to : ' . $this->output_path);
 
 		if (!is_writable($this->output_path)) {
 			$this->log('[CSSTidy] Output path not writable: ' . $this->output_path);
@@ -200,7 +201,7 @@ class CSSTidy extends ModulesAbstract {
 			return false;
 		}
 
-		// handle adding the basepath to the file
+		// handle adding the output_path to the file
 		if (strpos($file, $this->output_path) === false) {
 			$file = rtrim($this->output_path, DIRECTORY_SEPARATOR)
 				. DIRECTORY_SEPARATOR . ltrim($file, DIRECTORY_SEPARATOR);
@@ -263,8 +264,8 @@ class CSSTidy extends ModulesAbstract {
 	 */
 	public function addFile($file)
 	{
-		// handle adding the basepath to the file
-		if (!empty($this->basepath)
+		// handle adding the output_path to the file
+		if (!empty($this->output_path)
 			&& strpos($file, 'http') === false
 			&& strpos($file, '//') === false
 		) {

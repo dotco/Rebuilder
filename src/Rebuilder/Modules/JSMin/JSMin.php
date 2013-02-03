@@ -161,6 +161,7 @@ class JSMin extends ModulesAbstract {
 		} else if ($this->basepath) {
 			$this->output_path = $this->basepath;
 		}
+		$this->log('[JSMin] Set output_path to : ' . $this->output_path);
 
 		if (!is_writable($this->output_path)) {
 			$this->log('[JSMin] Output path not writable: ' . $this->output_path);
@@ -240,7 +241,7 @@ class JSMin extends ModulesAbstract {
 			return false;
 		}
 
-		// handle adding the basepath to the file
+		// handle adding the output_path to the file
 		if (strpos($file, $this->output_path) === false) {
 			$file = rtrim($this->output_path, DIRECTORY_SEPARATOR)
 				. DIRECTORY_SEPARATOR . ltrim($file, DIRECTORY_SEPARATOR);
@@ -303,12 +304,12 @@ class JSMin extends ModulesAbstract {
 	 */
 	public function addFile($file)
 	{
-		// handle adding the basepath to the file
-		if (!empty($this->basepath)
+		// handle adding the output_path to the file
+		if (!empty($this->output_path)
 			&& strpos($file, 'http') === false
 			&& strpos($file, '//') === false
 		) {
-			$file = rtrim($this->basepath, DIRECTORY_SEPARATOR)
+			$file = rtrim($this->output_path, DIRECTORY_SEPARATOR)
 				. DIRECTORY_SEPARATOR . ltrim($file, DIRECTORY_SEPARATOR);
 		} else if (strpos($file, '//') === 0) {
             $file = 'http:' . $file;
@@ -325,14 +326,6 @@ class JSMin extends ModulesAbstract {
 			return true;
 		}
 
-        // try one more thing
-        $contents = file_get_contents($file);
-        if ($contents) {
-            $this->files[] = $file;
-            $this->log('[JSMin] Added file ' . $file . '.');
-            return true;
-        }
-
 		$this->log('[JSMin] Could not add file ' . $file . '.');
 		if (substr(strrchr($file, '.'), 1) != "js") {
 			$this->log('[JSMin] Reason: File does not end in .js');
@@ -341,6 +334,7 @@ class JSMin extends ModulesAbstract {
 		} else if (!is_readable($file)) {
 			$this->log('[JSMin] Reason: File is not readable');
 		}
+
 		return false;
 	}
 
