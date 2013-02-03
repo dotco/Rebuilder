@@ -161,7 +161,7 @@ class JSMin extends ModulesAbstract {
 		} else if ($this->basepath) {
 			$this->output_path = $this->basepath;
 		}
-		$this->log('[JSMin] Set output_path to : ' . $this->output_path);
+		$this->log('[JSMin] Set output_path to: ' . $this->output_path);
 
 		if (!is_writable($this->output_path)) {
 			$this->log('[JSMin] Output path not writable: ' . $this->output_path);
@@ -370,6 +370,7 @@ class JSMin extends ModulesAbstract {
 	public function requiresRebuild()
 	{
 		if ($this->force_rebuild) {
+			$this->log('[JSMin] Forced rebuild.');
 			return true;
 		}
 

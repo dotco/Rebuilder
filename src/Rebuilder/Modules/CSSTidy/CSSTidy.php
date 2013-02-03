@@ -332,6 +332,7 @@ class CSSTidy extends ModulesAbstract {
 	public function requiresRebuild()
 	{
 		if ($this->force_rebuild) {
+			$this->log('[CSSTidy] Forced rebuild.');
 			return true;
 		}
 

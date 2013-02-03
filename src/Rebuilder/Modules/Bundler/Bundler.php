@@ -107,7 +107,8 @@ class Bundler extends ModulesAbstract {
             $class = new \Rebuilder\Modules\CSSTidy(
                 array(
                     'force_rebuild' => TRUE,
-                    'combine_files' => FALSE,
+                    'minify_files' => TRUE,
+                    'combine_files' => TRUE,
                     'basepath' => $this->csstidy['basepath'],
                     'output_path' => dirname($file['filepath']),
                     'output_file' => $file['filename'],
@@ -134,7 +135,8 @@ class Bundler extends ModulesAbstract {
             $class = new \Rebuilder\Modules\JSMin(
                 array(
                     'force_rebuild' => TRUE,
-                    'combine_files' => FALSE,
+                    'combine_files' => TRUE,
+                    'minify_files' => TRUE,
                     'basepath' => $this->jsmin['basepath'],
                     'output_path' => dirname($file['filepath']),
                     'output_file' => $file['filename'],
