@@ -169,21 +169,6 @@ class JSMin extends ModulesAbstract {
 			return false;
 		}
 
-		// set the output file
-		if (!empty($config['output_file'])) {
-			if (!$this->setOutputFile($config['output_file'])) {
-				$this->log('[JSMin] Skipping minification');
-				return false;
-			}
-		}
-
-		// add files with validation
-		if (!empty($config['files']) && is_array($config['files'])) {
-			foreach ($config['files'] as $file) {
-				$this->addFile($file);
-			}
-		}
-
 		if (!empty($config['find_replace']) && is_array($config['find_replace'])) {
 			$this->find_replace = $config['find_replace'];
 		}
@@ -198,6 +183,21 @@ class JSMin extends ModulesAbstract {
 
 		if (isset($config['force_rebuild'])) {
 			$this->force_rebuild = (bool) $config['force_rebuild'];
+		}
+
+		// set the output file
+		if (!empty($config['output_file'])) {
+			if (!$this->setOutputFile($config['output_file'])) {
+				$this->log('[JSMin] Skipping minification');
+				return false;
+			}
+		}
+
+		// add files with validation
+		if (!empty($config['files']) && is_array($config['files'])) {
+			foreach ($config['files'] as $file) {
+				$this->addFile($file);
+			}
 		}
     }
 

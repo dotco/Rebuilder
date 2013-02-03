@@ -125,23 +125,8 @@ class CSSTidy extends ModulesAbstract {
 			return false;
 		}
 
-		// set the output file
-		if (!empty($config['output_file'])) {
-			if (!$this->setOutputFile($config['output_file'])) {
-				$this->log('[CSSTidy] Skipping compression');
-				return false;
-			}
-		}
-
 		if (isset($config['multi_line'])) {
 			$this->multi_line = (bool) $config['multi_line'];
-		}
-
-		// add files with validation
-		if (!empty($config['files']) && is_array($config['files'])) {
-			foreach ($config['files'] as $file) {
-				$this->addFile($file);
-			}
 		}
 
 		if (!empty($config['find_replace']) && is_array($config['find_replace'])) {
@@ -158,6 +143,21 @@ class CSSTidy extends ModulesAbstract {
 
 		if (isset($config['force_rebuild'])) {
 			$this->force_rebuild = (bool) $config['force_rebuild'];
+		}
+
+		// set the output file
+		if (!empty($config['output_file'])) {
+			if (!$this->setOutputFile($config['output_file'])) {
+				$this->log('[CSSTidy] Skipping compression');
+				return false;
+			}
+		}
+
+		// add files with validation
+		if (!empty($config['files']) && is_array($config['files'])) {
+			foreach ($config['files'] as $file) {
+				$this->addFile($file);
+			}
 		}
 	}
 
