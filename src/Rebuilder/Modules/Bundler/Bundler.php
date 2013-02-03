@@ -181,11 +181,11 @@ class Bundler extends ModulesAbstract {
         $files = $this->_findFilesRecursive($basepath, array('.css'));
         foreach ($files as $file) {
             // don't deal with already minified or compressed files
-            if (strpos($file['filename'], '.min.css') !== FALSE) {
+            if (strpos($file['filename'], '.min') !== FALSE) {
                 continue;
-            } else if (strpos($file['filename'], '.compressed.css') !== FALSE) {
+            } else if (strpos($file['filename'], '.compressed') !== FALSE) {
                 continue;
-            } else if (strpos($file['filename'], '.gz.css') !== FALSE) {
+            } else if (strpos($file['filename'], '.gz') !== FALSE) {
                 continue;
             }
 
@@ -220,11 +220,11 @@ class Bundler extends ModulesAbstract {
         $files = $this->_findFilesRecursive($basepath, array('.js'));
         foreach ($files as $file) {
             // don't deal with already minified or compressed files
-            if (strpos($file['filename'], '.min.js') !== FALSE) {
+            if (strpos($file['filename'], '.min') !== FALSE) {
                 continue;
-            } else if (strpos($file['filename'], '.compressed.js') !== FALSE) {
+            } else if (strpos($file['filename'], '.compressed') !== FALSE) {
                 continue;
-            } else if (strpos($file['filename'], '.gz.js') !== FALSE) {
+            } else if (strpos($file['filename'], '.gz') !== FALSE) {
                 continue;
             }
 
