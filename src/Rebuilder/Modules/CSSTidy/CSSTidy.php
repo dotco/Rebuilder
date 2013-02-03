@@ -243,7 +243,7 @@ class CSSTidy extends ModulesAbstract {
 		}
 
 		$this->log('[CSSTidy] Could not set output file to ' . $file . '.');
-		if (substr(strrchr($file, '.'), 1) == "css") {
+		if (substr(strrchr($file, '.'), 1) != "css") {
 			$this->log('[CSSTidy] Reason: File does not end in .css');
 		} else if (is_file($file) && !is_writable($file)) {
 			$this->log('[CSSTidy] Reason: File exists but isnt writable');
@@ -288,7 +288,7 @@ class CSSTidy extends ModulesAbstract {
 		}
 
 		$this->log('[CSSTidy] Could not add file ' . $file . '.');
-		if (substr(strrchr($file, '.'), 1) == "css") {
+		if (substr(strrchr($file, '.'), 1) != "css") {
 			$this->log('[CSSTidy] Reason: File does not end in .css');
 		} else if (!is_file($file)) {
 			$this->log('[CSSTidy] Reason: File does not exist');

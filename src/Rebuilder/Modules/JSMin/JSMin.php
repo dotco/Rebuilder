@@ -241,7 +241,7 @@ class JSMin extends ModulesAbstract {
 		}
 
 		if (!empty($file)
-			&& substr(strrchr($file, '.'), 1) == "css"
+			&& substr(strrchr($file, '.'), 1) == "js"
 			&& ((is_file($file) && is_writable($file)) || is_writable(dirname($file)))) {
 				// set the output file
 				$this->output_file = $file;
@@ -277,7 +277,7 @@ class JSMin extends ModulesAbstract {
 		}
 
 		$this->log('[JSMin] Could not set output file to ' . $file);
-		if (substr(strrchr($file, '.'), 1) == "js") {
+		if (substr(strrchr($file, '.'), 1) != "js") {
 			$this->log('[JSMin] Reason: File does not end in .js');
 		} else if (is_file($file) && !is_writable($file)) {
 			$this->log('[JSMin] Reason: File exists but isnt writable');
@@ -328,8 +328,8 @@ class JSMin extends ModulesAbstract {
         }
 
 		$this->log('[JSMin] Could not add file ' . $file . '.');
-		if (substr(strrchr($file, '.'), 1) == "css") {
-			$this->log('[JSMin] Reason: File does not end in .css');
+		if (substr(strrchr($file, '.'), 1) != "js") {
+			$this->log('[JSMin] Reason: File does not end in .js');
 		} else if (!is_file($file)) {
 			$this->log('[JSMin] Reason: File does not exist');
 		} else if (!is_readable($file)) {
