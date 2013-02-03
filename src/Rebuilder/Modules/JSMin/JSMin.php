@@ -165,7 +165,7 @@ class JSMin extends ModulesAbstract {
 		// set the output file
 		if (!empty($config['output_file'])) {
 			if (!$this->setOutputFile($config['output_file'])) {
-				$this->log('[CSSTidy] Skipping minification');
+				$this->log('[JSMin] Skipping minification');
 				return false;
 			}
 		}
@@ -276,9 +276,9 @@ class JSMin extends ModulesAbstract {
 				return true;
 		}
 
-		$this->log('[JSMin] Could not set output file to ' . $file . '.');
-		if (substr(strrchr($file, '.'), 1) == "css") {
-			$this->log('[JSMin] Reason: File does not end in .css');
+		$this->log('[JSMin] Could not set output file to ' . $file);
+		if (substr(strrchr($file, '.'), 1) == "js") {
+			$this->log('[JSMin] Reason: File does not end in .js');
 		} else if (is_file($file) && !is_writable($file)) {
 			$this->log('[JSMin] Reason: File exists but isnt writable');
 		} else if (!is_writable(dirname($file))) {
@@ -470,7 +470,7 @@ class JSMin extends ModulesAbstract {
 			}
 
 		} catch (Exception $e) {
-			$this->log('[CSSTidy] Exception: ' . $e->getMessage());
+			$this->log('[JSMin] Exception: ' . $e->getMessage());
 		}
 
 		return false;

@@ -20,9 +20,9 @@ use \Exception as Exception;
 class CSSTidy extends ModulesAbstract {
 
 	/**
-	 * Whether to combine JS files into a single file without any form
+	 * Whether to combine CSS files into a single file without any form
 	 * of minification. The combined files will take the output_file name
-	 * and end with ".compressed.js" as opposed to ".min.js"
+	 * and end with ".compressed.css" as opposed to ".min.css"
 	 * @var	bool
 	 */
 	private $combine_files = FALSE;
@@ -357,7 +357,7 @@ class CSSTidy extends ModulesAbstract {
 
 	/**
 	 * Handles cominging files without any form of minification. This is a simple
-	 * method for combining of JS files but not touching them.
+	 * method for combining of CSS files but not touching them.
 	 *
 	 * @access	public
 	 * @return	void
