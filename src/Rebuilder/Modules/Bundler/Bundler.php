@@ -111,7 +111,7 @@ class Bundler extends ModulesAbstract {
                     'basepath' => $this->csstidy['basepath'],
                     'output_path' => dirname($file['filepath']),
                     'output_file' => $file['filename'],
-                    'files' => array($file['filepath'])
+                    'files' => array($file['filename'])
                 )
             );
 
@@ -138,7 +138,7 @@ class Bundler extends ModulesAbstract {
                     'basepath' => $this->jsmin['basepath'],
                     'output_path' => dirname($file['filepath']),
                     'output_file' => $file['filename'],
-                    'files' => array($file['filepath'])
+                    'files' => array($file['filename'])
                 )
             );
 
