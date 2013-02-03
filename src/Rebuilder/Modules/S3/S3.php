@@ -179,8 +179,6 @@ class S3 extends ModulesAbstract {
 			$exts = array('.css');
 			$files = array_merge($files, $this->_findFilesRecursive(self::$cssDir, $exts));
 		}
-		error_log(print_r($files, true));
-		die;
 
 		if (!empty(self::$jsDir)) {
 			$exts = array('.js');
