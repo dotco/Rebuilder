@@ -118,11 +118,12 @@ class Bundler extends ModulesAbstract {
         // merge the config with files and override some core options
         $config = $this->jsmin;
 
-        // add the public directory
+        // add full path to relative filepath
         $files = $options['files'];
         foreach ($files as $k => $v) {
-            $files[$k] = rtrim($this->public_dir, DIRECTORY_SEPARATOR) .
-                DIRECTORY_SEPARATOR . ltrim($v, DIRECTORY_SEPARATOR);
+            $files[$k] = rtrim($config['basepath'], '/') . '/'
+                . rtrim($config['relpath'], '/') . '/'
+                . ltrim($v, '/');
         }
 
         $config['files'] = $files;
@@ -145,11 +146,12 @@ class Bundler extends ModulesAbstract {
         // merge the config with files
         $config = $this->csstidy;
 
-        // add the public directory
+        // add full path to relative filepath
         $files = $options['files'];
         foreach ($files as $k => $v) {
-            $files[$k] = rtrim($this->public_dir, DIRECTORY_SEPARATOR) .
-                DIRECTORY_SEPARATOR . ltrim($v, DIRECTORY_SEPARATOR);
+            $files[$k] = rtrim($config['basepath'], '/') . '/'
+                . rtrim($config['relpath'], '/') . '/'
+                . ltrim($v, '/');
         }
 
         $config['files'] = $files;
