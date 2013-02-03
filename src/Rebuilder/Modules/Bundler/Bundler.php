@@ -198,6 +198,7 @@ class Bundler extends ModulesAbstract {
                     'basepath' => $this->csstidy['basepath'],
                     'output_path' => dirname($file['filepath']),
                     'output_file' => $file['filename'],
+                    'find_replace' => $this->csstidy['find_replace'],
                     'files' => array($file['filepath'])
                 )
             );
@@ -236,6 +237,7 @@ class Bundler extends ModulesAbstract {
                     'basepath' => $this->jsmin['basepath'],
                     'output_path' => dirname($file['filepath']),
                     'output_file' => $file['filename'],
+                    'find_replace' => $this->jsmin['find_replace'],
                     'files' => array($file['filepath'])
                 )
             );
