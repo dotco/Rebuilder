@@ -25,12 +25,13 @@ class CSSTidy extends ModulesAbstract {
 	 * and end with ".compressed.js" as opposed to ".min.js"
 	 * @var	bool
 	 */
-	private $_combine_files = FALSE;
+	private $combine_files = FALSE;
 
 	/**
-	 * Whether to minify the files
+	 * Whether to minify the files.
+	 * @var	bool
 	 */
-	private $_minify_files = FALSE;
+	private $minify_files = FALSE;
 
 	/**
 	 * Triggers forcing a rebuild.
@@ -95,7 +96,8 @@ class CSSTidy extends ModulesAbstract {
 	private $compressed_css;
 
 	/**
-	 * Default constructor for setting up configuration options.
+	 * Default constructor for setting up configuration options. It's not pretty
+	 * checking for appropriate options, but it's necessary.
 	 *
 	 * @access	public
 	 * @param	array   $config
@@ -103,20 +105,35 @@ class CSSTidy extends ModulesAbstract {
 	 */
 	public function __construct($config = array())
 	{
-		if (isset($config['multi_line'])) {
-			$this->multi_line = (bool) $config['multi_line'];
-		}
-
 		// check for the base full path to the files
 		if (!empty($config['basepath']) && is_dir($config['basepath'])) {
 			$this->basepath = $config['basepath'];
 		}
 
-		// check for the base output path
+		// there's the potential for output_path to override basepath
+		// when we have single file compression and minification
 		if (!empty($config['output_path']) && is_dir($config['output_path'])) {
 			$this->output_path = $config['output_path'];
 		} else if ($this->basepath) {
 			$this->output_path = $this->basepath;
+		}
+
+		if (!is_writable($this->output_path)) {
+			$this->log('[CSSTidy] Output path not writable: ' . $this->output_path);
+			$this->log('[CSSTidy] Skipping minification');
+			return false;
+		}
+
+		// set the output file
+		if (!empty($config['output_file'])) {
+			if (!$this->setOutputFile($config['output_file'])) {
+				$this->log('[CSSTidy] Skipping compression');
+				return false;
+			}
+		}
+
+		if (isset($config['multi_line'])) {
+			$this->multi_line = (bool) $config['multi_line'];
 		}
 
 		// add files with validation
@@ -126,17 +143,16 @@ class CSSTidy extends ModulesAbstract {
 			}
 		}
 
-		// set the output file
-		if (!empty($config['output_file'])) {
-			$this->setOutputFile($config['output_file']);
-		}
-
 		if (!empty($config['find_replace']) && is_array($config['find_replace'])) {
 			$this->find_replace = $config['find_replace'];
 		}
 
 		if (!empty($config['combine_files'])) {
-			$this->_combine_files = TRUE;
+			$this->combine_files = TRUE;
+		}
+
+		if (!empty($config['minify_files'])) {
+			$this->minify_files = TRUE;
 		}
 
 		if (isset($config['force_rebuild'])) {
@@ -156,29 +172,13 @@ class CSSTidy extends ModulesAbstract {
 		// determine if we need to run
 		if ($this->requiresRebuild()) {
 			// simple handler for combining the files
-			if ($this->_combine_files) {
+			if ($this->combine_files) {
 				$this->combineFiles();
 			}
 
-			// get the compressed string
-			$compressed = $this->mergeFiles()->compressCSS()->getCompressedCSS(true);
-
-			// if no errors, write to the output file
-			if (!empty($compressed)) {
-				$this->log('[CSSTidy] Files compressed.');
-				if (isset($this->output_file)) {
-					// generate minified filename
-					$filename =
-						dirname($this->output_file) . DIRECTORY_SEPARATOR
-						. basename($this->output_file, '.css')
-						. '.min.css';
-
-					if (file_put_contents($this->output_file, $compressed)) {
-						$this->log('[CSSTidy] Files saved to output file ' . $this->output_file . '.');
-					}
-				} else {
-					echo $compressed;
-				}
+			// handle minification of files
+			if ($this->minify_files) {
+				$this->minifyFiles();
 			}
 		}
 	}
@@ -192,35 +192,65 @@ class CSSTidy extends ModulesAbstract {
 	 */
 	public function setOutputFile($file)
 	{
-		// handle adding the basepath to the file
-		if (!empty($this->output_path)
-			&& strpos($file, 'http') === false
-			&& strpos($file, '//') === false
-		) {
-			$file = rtrim($this->output_path, DIRECTORY_SEPARATOR)
-				. DIRECTORY_SEPARATOR . ltrim($file, DIRECTORY_SEPARATOR);
-		} else if (strpos($file, '//') === 0) {
-            $file = 'http:' . $file;
-        }
-
-		if ($file != null && $file != "" && substr(strrchr($file, '.'), 1) == "css") {
-			if ((is_file($file) && is_writable($file)) || is_writable(dirname($file))) {
-				$this->output_file = $file;
-				$this->last_modified = @filemtime($this->output_file);
-				$this->log('[CSSTidy] Set output file to ' . $file . '.');
-				return true;
-			}
+		// we can't handle remote output files
+		if (empty($this->output_path)
+			|| strpos($file, 'http') === 0
+			|| strpos($file, '//') === 0) {
+			$this->log('[CSSTidy] Cannot set output file to a remote path.');
+			return false;
 		}
 
-        // try one more thing
-        $contents = file_get_contents($file);
-        if ($contents) {
-            $this->files[] = $contents;
-			$this->log('[CSSTidy] Added file ' . $file . '.');
-            return true;
-        }
+		// handle adding the basepath to the file
+		if (strpos($file, $this->output_path) === false) {
+			$file = rtrim($this->output_path, DIRECTORY_SEPARATOR)
+				. DIRECTORY_SEPARATOR . ltrim($file, DIRECTORY_SEPARATOR);
+		}
+
+		if (!empty($file)
+			&& substr(strrchr($file, '.'), 1) == "css"
+			&& ((is_file($file) && is_writable($file)) || is_writable(dirname($file)))) {
+				// set the output file
+				$this->output_file = $file;
+				$this->last_modified = (int) @filemtime($this->output_file);
+				$this->log('[CSSTidy] Set output file to ' . $file . '.');
+
+				// now see if we need to create compressed and minified file paths
+				if ($this->minify_files) {
+					$this->output_file_min =
+						dirname($this->output_file) . DIRECTORY_SEPARATOR
+						. basename($this->output_file, '.css')
+						. '.' . self::MINIFY_SUFFIX . '.css';
+
+					$this->last_modified =
+						min($this->last_modified, (int) @filemtime($this->output_file_min));
+
+					$this->log('[CSSTidy] Set output minification file to ' . $this->output_file_min);
+				}
+
+				if ($this->combine_files) {
+					$this->output_file_comb =
+						dirname($this->output_file) . DIRECTORY_SEPARATOR
+						. basename($this->output_file, '.css')
+						. '.' . self::COMBINE_SUFFIX . '.css';
+
+					$this->last_modified =
+						min($this->last_modified, (int) @filemtime($this->output_file_min));
+
+					$this->log('[CSSTidy] Set output combination file to ' . $this->output_file_comb);
+				}
+
+				return true;
+		}
 
 		$this->log('[CSSTidy] Could not set output file to ' . $file . '.');
+		if (substr(strrchr($file, '.'), 1) == "css") {
+			$this->log('[CSSTidy] Reason: File does not end in .css');
+		} else if (is_file($file) && !is_writable($file)) {
+			$this->log('[CSSTidy] Reason: File exists but isnt writable');
+		} else if (!is_writable(dirname($file))) {
+			$this->log('[CSSTidy] Reason: File does not exist and parent file directory is not writable');
+		}
+
 		return false;
 	}
 
@@ -238,8 +268,11 @@ class CSSTidy extends ModulesAbstract {
 			&& strpos($file, 'http') === false
 			&& strpos($file, '//') === false
 		) {
-			$file = rtrim($this->basepath, DIRECTORY_SEPARATOR)
-				. DIRECTORY_SEPARATOR . ltrim($file, DIRECTORY_SEPARATOR);
+			// check if the file already contains the full output_path
+			if (strpos($file, $this->output_path) === FALSE) {
+				$file = rtrim($this->output_path, DIRECTORY_SEPARATOR)
+					. DIRECTORY_SEPARATOR . ltrim($file, DIRECTORY_SEPARATOR);
+			}
 		} else if (strpos($file, '//') === 0) {
             $file = 'http:' . $file;
         }
@@ -255,6 +288,14 @@ class CSSTidy extends ModulesAbstract {
 		}
 
 		$this->log('[CSSTidy] Could not add file ' . $file . '.');
+		if (substr(strrchr($file, '.'), 1) == "css") {
+			$this->log('[CSSTidy] Reason: File does not end in .css');
+		} else if (!is_file($file)) {
+			$this->log('[CSSTidy] Reason: File does not exist');
+		} else if (!is_readable($file)) {
+			$this->log('[CSSTidy] Reason: File is not readable');
+		}
+
 		return false;
 	}
 
@@ -297,14 +338,15 @@ class CSSTidy extends ModulesAbstract {
 
 		if (!empty($this->files)) {
 			foreach ($this->files as $file) {
-				$modified = @filemtime($file);
+				$modified = (int) @filemtime($file);
 				if ($modified && $modified > $max_modified) {
 					$max_modified = $modified;
 				}
 			}
 		}
 
-		if ($max_modified > $this->last_modified) {
+		if ($this->last_modified === 0
+			|| $max_modified > $this->last_modified) {
 			$this->log('[CSSTidy] Rebuild required.');
 			return true;
 		}
@@ -324,46 +366,73 @@ class CSSTidy extends ModulesAbstract {
 	{
 		$output = '';
 
-		foreach ($this->files as $file) {
-			$contents = null;
+		try {
 
-            // check if we need retrieval by URL
-            if (strpos($file, 'http') === 0) {
-                $contents = file_get_contents($file);
-            } else {
-                $fh = fopen($file, 'r');
-                $contents = fread($fh, filesize($file));
-                fclose($fh);
-            }
+			foreach ($this->files as $file) {
+				$contents = null;
 
-            // if we don't have contents, continue
-			if (!$contents) {
-                $this->log('[CSSTidy] Error, contents not found in ' . $file . '.');
-                continue;
+				// check if we need retrieval by URL
+				if (strpos($file, 'http') === 0) {
+					$contents = file_get_contents($file);
+				} else {
+					$fh = fopen($file, 'r');
+					$contents = fread($fh, filesize($file));
+					fclose($fh);
+				}
+
+				// if we don't have contents, continue
+				if (!$contents) {
+					$this->log('[CSSTidy] Error, contents not found in ' . $file . '.');
+					continue;
+				}
+
+				// find and replace any necessary strings
+				$contents = $this->findAndReplace($contents);
+
+				// add contents to output
+				$output .= $contents;
 			}
 
-			// find and replace any necessary strings
-			$contents = $this->findAndReplace($contents);
-
-			// add contents to output
-			$output .= $contents;
-		}
-
-		// if no errors, write to the output file
-		if (!empty($output)) {
-			$this->log('[CSSTidy] Files combined into single string.');
-			if (isset($this->output_file)) {
-				// determine the combined filename based on the output filename
-				$filename =
-					dirname($this->output_file) . DIRECTORY_SEPARATOR
-					. basename($this->output_file, '.css')
-					. '.compressed.css';
-
-				if (file_put_contents($filename, $output)) {
-					$this->log('[CSSTidy] Files saved to output file ' . $filename . '.');
+			// if no errors, write to the output file
+			if (!empty($output)) {
+				$this->log('[CSSTidy] Files combined into single string.');
+				if (file_put_contents($this->output_file_comb, $output)) {
+					$this->log('[CSSTidy] Files saved to combined output file ' . $this->output_file_comb . '.');
+					return true;
 				}
 			}
+
+		} catch (Exception $e) {
+			$this->log('[CSSTidy] Exception: ' . $e->getMessage());
 		}
+
+		return false;
+	}
+
+	/**
+	 * Wrapper around file minification process.
+	 *
+	 * @access	public
+	 * @return	void
+	 */
+	public function minifyFiles()
+	{
+		try {
+
+			// get the compressed string and write to file
+			$compressed = $this->mergeFiles()->compressCSS()->getCompressedCSS(true);
+			if (!empty($compressed)) {
+				$this->log('[CSSTidy] Files have been locally compressed.');
+				if (file_put_contents($this->output_file_min, $compressed)) {
+					$this->log('[CSSTidy] Files saved to minified output file ' . $this->output_file_min);
+				}
+			}
+
+		} catch (Exception $e) {
+			$this->log('[CSSTidy] Exception: ' . $e->getMessage());
+		}
+
+		return false;
 	}
 
 	/**
