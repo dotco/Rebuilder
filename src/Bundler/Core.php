@@ -128,7 +128,8 @@ class Core {
 
 		// special handling for non-bundle assets
 		if (strpos($bundle, '*') === 0) {
-			$path = substr($bundle, 1);
+			$bundle = substr($bundle, 1);
+			$path = $bundle;
 			$dir = rtrim(dirname($bundle), '/') . '/';
 			$bundle = strpos($bundle, $ext) !== FALSE ? basename($bundle, $ext) : $bundle;
 		} else if (empty(self::$bundles[$bundle][$type])) {
@@ -162,7 +163,7 @@ class Core {
 		}
 
 		// we are loading some form of minified/compressed bundle
-		return self::loadCompressed($bundle, $filename, $dir, $ext, $config);
+		return self::loadCompressed($bundle, $filename, $dir, $ext, $format, $config);
 	}
 
 	/**
@@ -173,10 +174,11 @@ class Core {
 	 * @param	string	$filename
 	 * @param	string	$dir
 	 * @param	string	$ext
+	 * @param	string	$format
 	 * @param	array	$config
 	 * @return	void
 	 */
-	public static function loadCompressed($bundle, $filename, $dir, $ext, $config)
+	public static function loadCompressed($bundle, $filename, $dir, $ext, $format, $config)
 	{
 		if (isset(self::$s3['enabled']) && self::$s3['enabled'] === TRUE) {
 			if (isset(self::$gzip['enabled']) && self::$gzip['enabled'] === TRUE) {
@@ -208,7 +210,7 @@ class Core {
 			);
 		}
 
-		echo '<script type="text/javascript" src="' . $filepath . '"></script>' . PHP_EOL;
+		echo sprintf($format, $filepath) . PHP_EOL;
 	}
 
 	/**
