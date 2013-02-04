@@ -17,10 +17,10 @@ if (isset($options['help']) || isset($options['h'])
     $str .= 'Short Options: ' . PHP_EOL;
     $str .= '--------------------' . PHP_EOL;
     $str .= "-c <path|file>\tThe full/absolute path to your configuration file." . PHP_EOL;
-    $str .= "-e <env>\tThe environment you wish to use in the configuration file." . PHP_EOL;
+    $str .= "-e <env>\t\tThe environment you wish to use in the configuration file." . PHP_EOL;
     $str .= "-m <modules>\tComma separated list of the modules you want to run, in queued order" . PHP_EOL;
     $str .= "-a <action>\tComma separated list of the module actions you want to perform, in queued order" . PHP_EOL;
-    $str .= "-h\t This help document." . PHP_EOL . PHP_EOL;
+    $str .= "-h\t\tThis help document." . PHP_EOL . PHP_EOL;
 
     $str .= 'Long Options: ' . PHP_EOL;
     $str .= '--------------------' . PHP_EOL;
@@ -31,24 +31,24 @@ if (isset($options['help']) || isset($options['h'])
 
     $str .= 'Available Built-In Modules: ' . PHP_EOL;
     $str .= '--------------------' . PHP_EOL;
-    $str .= "bundler -\tA module wrapping the CSSTidy and JSMin modules which
+    $str .= "bundler -A module wrapping the CSSTidy and JSMin modules which
     allows for auto creation of minified and compressed CSS and JS \"bundles\".
     Bundles are essentially combined files of a user supplied name which are intended
     to be used as pluggable media assets on your website." . PHP_EOL . PHP_EOL;
 
-    $str .= "csstidy -\tA module for combining and/or minifying CSS files. You
+    $str .= "csstidy -A module for combining and/or minifying CSS files. You
     can combine and minify multiple files or minify just a single file." . PHP_EOL . PHP_EOL;
 
-    $str .= "gzip -\tA module for generating gzipped versions of files. This module
+    $str .= "gzip -A module for generating gzipped versions of files. This module
     is intended to be used in combination with the Amazon S3 module to properly
     serve gzipped media assets. Accepts the --action parameter with possible values
     css and js." . PHP_EOL . PHP_EOL;
 
-    $str .= "jsmin -\tA module for combining and/or minifying JS files. You can
+    $str .= "jsmin -A module for combining and/or minifying JS files. You can
     combine and minify multiple files or minify just a single file. Filenames
     containing .min will be excluded from minification." . PHP_EOL . PHP_EOL;
 
-    $str .= "s3 -\tA module for uploading all of your media assets (css, js, fonts,
+    $str .= "s3 - A module for uploading all of your media assets (css, js, fonts,
     images) to an Amazon S3 bucket. Allows for prefixing your assets with a string
     to mimic your local folder structure. Checks files for modifications via size
     comparison before attempting to upload to conserve bandwidth. Special handling

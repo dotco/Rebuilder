@@ -75,6 +75,9 @@ class Bundler extends ModulesAbstract {
 
         // handle configuration setup and merging
         $this->mergeConfigs($config);
+		echo print_r($this->csstidy, true);
+		echo print_r($this->jsmin, true);
+		die;
 	}
 
 	/**
@@ -157,8 +160,8 @@ class Bundler extends ModulesAbstract {
         }
 
         $config['files'] = $files;
-        $config['combine_files'] = true;
-        $config['minify_files'] = true;
+        $config['combine'] = true;
+        $config['minify'] = true;
         $config['output_path'] = rtrim($config['basepath'], '/') . rtrim($config['relpath'], '/') . '/bundles/';
         $config['output_file'] = $bundle . '.css';
 
@@ -191,8 +194,8 @@ class Bundler extends ModulesAbstract {
             $class = new \Rebuilder\Modules\CSSTidy(
                 array(
                     'force_rebuild' => TRUE,
-                    'minify_files' => TRUE,
-                    'combine_files' => TRUE,
+                    'minify' => TRUE,
+                    'combine' => TRUE,
                     'basepath' => $this->csstidy['basepath'],
                     'output_path' => dirname($file['filepath']),
                     'output_file' => $file['filename'],
@@ -230,8 +233,8 @@ class Bundler extends ModulesAbstract {
             $class = new \Rebuilder\Modules\JSMin(
                 array(
                     'force_rebuild' => TRUE,
-                    'combine_files' => TRUE,
-                    'minify_files' => TRUE,
+                    'combine' => TRUE,
+                    'minify' => TRUE,
                     'basepath' => $this->jsmin['basepath'],
                     'output_path' => dirname($file['filepath']),
                     'output_file' => $file['filename'],
@@ -281,11 +284,30 @@ class Bundler extends ModulesAbstract {
      */
     protected function _mergeConfigs($type, $configOverride)
     {
-        $this->{$type} = array_merge_recursive(
+        $this->{$type} = $this->_array_merge_recursive(
             $this->loader->getModule($type),
             $configOverride
         );
     }
+
+	/**
+	 * Custom implementation of array merge recursive for config files. Ensures
+	 * that matching array keys do not create nested arrays but rather override.
+	 *
+	 * @access	protected
+	 *
+	 */
+	protected function _array_merge_recursive(array $parent, array $override)
+	{
+		foreach ($override as $key => $value) {
+			if (is_array($value) && isset($parent[$key]) && is_array($parent[$key])) {
+				$parent[$key] = $this->_array_merge_recursive($parent[$key], $value);
+			} else {
+				$parent[$key] = $value;
+			}
+		}
+		return $parent;
+	}
 
 	/**
 	 * Handles recursively finding files in a directory matching a given extension
