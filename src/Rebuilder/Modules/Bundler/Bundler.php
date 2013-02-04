@@ -75,9 +75,6 @@ class Bundler extends ModulesAbstract {
 
         // handle configuration setup and merging
         $this->mergeConfigs($config);
-		echo print_r($this->csstidy, true);
-		echo print_r($this->jsmin, true);
-		die;
 	}
 
 	/**
