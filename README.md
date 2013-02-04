@@ -10,6 +10,13 @@ they may modify. The only thing Rebuilder cares about is that your modules
 follow a specific naming convention and directory structure for autoloading
 purposes.
 
+## Pre-requisites ##
+Certain Rebuilder modules may have pre-requisites. 
+
+* PHP 5.3+
+* Composer (it utilizes the autoloader internally)
+* Write access to your public media directory
+
 ## Existing Modules ##
 The following modules currently exist and are shipped with Rebuilder:
 
@@ -230,14 +237,14 @@ Running the Bundler command line script
 
 ```bash
 # specifying a configuration file (wont work without action param)
-./vendor/bin/rebuilder --config="/path/to/config.php"
+./vendor/bin/rebuilder --config="/path/to/config.php" --env="local"
 
 # run a particular action
-./vendor/bin/rebuilder --modules="csstidy,jsmin" --config="/path/to/config.php"
+./vendor/bin/rebuilder --modules="csstidy,jsmin" --config="/path/to/config.php" --env="local"
 
 # run with a type specifier (only upload images to S3)
-./vendor/bin/rebuilder --modules="s3" --type="img" --config="/path/to/config.php"
+./vendor/bin/rebuilder --modules="s3" --type="img" --config="/path/to/config.php" --env="local"
 
 # run bundler
-./vendor/bin/rebuilder --modules="bundler" --config="/path/to/config.php"
+./vendor/bin/rebuilder --modules="bundler" --config="/path/to/config.php" --env="local"
 ```
