@@ -5,23 +5,82 @@
 require_once(__DIR__ . '/../../../autoload.php');
 
 // check for params
-$options = getopt('c:e::m:t:', array('config:', 'env::', 'modules:', 'type:'));
+$options = getopt('c:e::m:a:h', array('config:', 'env::', 'modules:', 'action:', 'help'));
 
-// TODO: add help section
-// ...
+// help section
+if (isset($options['help']) || isset($options['h'])) {
+    $str = PHP_EOL . 'Usage: ' . PHP_EOL;
+    $str .= '--------------------' . PHP_EOL;
+    $str .= 'rebuilder [options] -c "/path/to/config.php"' . PHP_EOL;
+    $str .= 'rebuilder ';
 
-// handles merge of config files
+    $str .= 'Short Options: ' . PHP_EOL;
+    $str .= '--------------------' . PHP_EOL;
+    $str .= "-c <path|file>\tThe full/absolute path to your configuration file." . PHP_EOL;
+    $str .= "-e <env>\tThe environment you wish to use in the configuration file." . PHP_EOL;
+    $str .= "-m <modules>\tComma separated list of the modules you want to run, in queued order" . PHP_EOL;
+    $str .= "-a <action>\tComma separated list of the module actions you want to perform, in queued order" . PHP_EOL;
+    $str .= "-h\t This help document." . PHP_EOL . PHP_EOL;
+
+    $str .= 'Long Options: ' . PHP_EOL;
+    $str .= '--------------------' . PHP_EOL;
+    $str .= "--config=\"<path|file>\"\tThe full/absolute path to your configuration file." . PHP_EOL;
+    $str .= "--env=\"<env>\"\tThe environment you wish to use in the configuration file." . PHP_EOL;
+    $str .= "--modules=\"<modules>\"\tComma separated list of the modules you want to run, in queued order" . PHP_EOL;
+    $str .= "--action=\"<actions>\"\tComma separated list of the module actions you want to perform, in queued order" . PHP_EOL;
+
+    $str .= 'Available Built-In Modules: ' . PHP_EOL;
+    $str .= '--------------------' . PHP_EOL;
+    $str .= "bundler -\tA module wrapping the CSSTidy and JSMin modules which
+    allows for auto creation of minified and compressed CSS and JS \"bundles\".
+    Bundles are essentially combined files of a user supplied name which are intended
+    to be used as pluggable media assets on your website." . PHP_EOL . PHP_EOL;
+
+    $str .= "csstidy -\tA module for combining and/or minifying CSS files. You
+    can combine and minify multiple files or minify just a single file." . PHP_EOL . PHP_EOL;
+
+    $str .= "gzip -\tA module for generating gzipped versions of files. This module
+    is intended to be used in combination with the Amazon S3 module to properly
+    serve gzipped media assets." . PHP_EOL . PHP_EOL;
+
+    $str .= "jsmin -\tA module for combining and/or minifying JS files. You can
+    combine and minify multiple files or minify just a single file. Filenames
+    containing .min will be excluded from minification." . PHP_EOL . PHP_EOL;
+
+    $str .= "s3 -\tA module for uploading all of your media assets (css, js, fonts,
+    images) to an Amazon S3 bucket. Allows for prefixing your assets with a string
+    to mimic your local folder structure. Checks files for modifications via size
+    comparison before attempting to upload to conserve bandwidth. Special handling
+    added to support gzipped files with .gz in their name." . PHP_EOL . PHP_EOL;
+
+    $str .= 'Running a single module: ' . PHP_EOL;
+    $str .= '--------------------' . PHP_EOL;
+
+    $str .= 'Running multiple modules: ' . PHP_EOL;
+    $str .= '--------------------' . PHP_EOL;
+
+    $str .= 'Other examples: ' . PHP_EOL;
+    $str .= '--------------------' . PHP_EOL;
+    $str .= 'rebuilder -m bundler -e production -c "/path/to/config.php"' . PHP_EOL;
+    $str .= 'rebuilder -m "bundler,jsmin,gzip" -a js  -e local -c "/path/to/config.php"' . PHP_EOL;
+
+    $str .= PHP_EOL;
+    echo $str;
+    die;
+}
+
+/**
+ * Handles merge of config files.
+ */
 function _array_merge_recursive(array $parent, array $override)
 {
     foreach ($override as $key => $value) {
         if (is_array($value) && isset($parent[$key]) && is_array($parent[$key])) {
             $parent[$key] = _array_merge_recursive($parent[$key], $value);
         } else {
-            // direct override of value
             $parent[$key] = $value;
         }
     }
-
     return $parent;
 }
 
@@ -36,16 +95,11 @@ if (!empty($options['config']) || !empty($options['c'])) {
     // load external config file
     $config = include_once($file);
 
-    // merge config settings based on environment (waterfall)
-    $environments = array(
-        'staging' => 'production',
-        'development' => 'staging',
-        'local' => 'development'
-    );
-
-    foreach ($environments as $env => $parent_env) {
-        if (isset($config[$parent_env]) && isset($config[$env])) {
-            $config[$env] = _array_merge_recursive($config[$parent_env], $config[$env]);
+    if (isset($config['environments'])) {
+        foreach ((array) $config['environments'] as $env => $parent_env) {
+            if (isset($config[$parent_env]) && isset($config[$env])) {
+                $config[$env] = _array_merge_recursive($config[$parent_env], $config[$env]);
+            }
         }
     }
 
@@ -74,15 +128,15 @@ if (!empty($options['modules']) || !empty($options['m'])) {
     $mods = array_map('trim', $mods);
 
     // check for type
-    $type = !empty($options['type'])
-        ? $options['type']
-        : (!empty($options['t'])
-            ? $options['t']
+    $action = !empty($options['action'])
+        ? $options['action']
+        : (!empty($options['a'])
+            ? $options['a']
             : NULL);
 
-    if (!empty($type)) {
-        $type = explode(',', $type);
-        $type = array_map('trim', $type);
+    if (!empty($action)) {
+        $action = explode(',', $action);
+        $action = array_map('trim', $action);
     }
 
     // iterate over all actions to add to module
@@ -92,29 +146,27 @@ if (!empty($options['modules']) || !empty($options['m'])) {
             die('No configuration settings found for module ' . $m . '. Did you specify an environment?');
         }
 
+        // prepare module for merging and auto enable
         $modConfig = array($m => $config[$m]);
         $modConfig[$m]['enabled'] = true;
-        if (!isset($modConfig['config'])) {
-            $modConfig['config'] = array();
-        }
 
         // special bundler handling due to requirements of jsmin and csstidy
         if ($m == 'bundler') {
-            if (empty($config['csstidy']['config'])) {
+            if (empty($config['csstidy'])) {
                 die('Bundler requires you to include CSSTidy module config settings.');
             }
 
-            if (empty($config['jsmin']['config'])) {
+            if (empty($config['jsmin'])) {
                 die('Bundler requires you to include JSMin module config settings.');
             }
 
-            $modConfig[$m]['config']['csstidy'] = $config['csstidy']['config'];
-            $modConfig[$m]['config']['jsmin'] = $config['jsmin']['config'];
+            $modConfig[$m]['csstidy'] = $config['csstidy'];
+            $modConfig[$m]['jsmin'] = $config['jsmin'];
         }
 
-        // merge with type, if applicable
-        if (!empty($type)) {
-            $modConfig[$m]['config']['type'] = $type;
+        // add action(s) if they exist
+        if (!empty($action)) {
+            $modConfig[$m]['action'] = $action;
         }
 
         // check for module action config options from file

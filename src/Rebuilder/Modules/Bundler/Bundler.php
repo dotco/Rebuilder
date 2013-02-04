@@ -127,10 +127,9 @@ class Bundler extends ModulesAbstract {
         }
 
         $config['files'] = $files;
-        $config['combine_files'] = true;
-        $config['minify_files'] = true;
-        $config['output_path'] =
-            rtrim($config['basepath'], '/') . rtrim($config['relpath'], '/') . '/bundles/';
+        $config['combine'] = true;
+        $config['minify'] = true;
+        $config['output_path'] = rtrim($config['basepath'], '/') . rtrim($config['relpath'], '/') . '/bundles/';
         $config['output_file'] = $bundle . '.js';
 
         $class = new \Rebuilder\Modules\JSMin($config);
@@ -160,8 +159,7 @@ class Bundler extends ModulesAbstract {
         $config['files'] = $files;
         $config['combine_files'] = true;
         $config['minify_files'] = true;
-        $config['output_path'] =
-            rtrim($config['basepath'], '/') . rtrim($config['relpath'], '/') . '/bundles/';
+        $config['output_path'] = rtrim($config['basepath'], '/') . rtrim($config['relpath'], '/') . '/bundles/';
         $config['output_file'] = $bundle . '.css';
 
         $class = new \Rebuilder\Modules\CSSTidy($config);

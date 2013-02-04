@@ -44,15 +44,19 @@ class Core {
                 continue;
             }
 
+            // verify we have a class to load
+            if (empty($config['class'])) {
+                $this->log('No class param specified in ' . $moduleName . ' config. Skipping.');
+                continue;
+            }
+
             try {
 
-                $this->log('Running module: ' . $moduleName);
-                //$this->log('Module config settings:');
-                //$this->log($config);
+                $this->log('Attempting to run module: ' . $moduleName);
 
                 // use the class param for autoloading
                 $class = '\\Rebuilder\\Modules\\' . $config['class'];
-                $module = new $class($config['config'], $this->loader);
+                $module = new $class($config, $this->loader);
 
                 // trigger running of the module
                 $module->run();

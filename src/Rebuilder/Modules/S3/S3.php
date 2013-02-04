@@ -131,35 +131,35 @@ class S3 extends ModulesAbstract {
 		}
 
 		// check for a type limiter
-		$type = array('css', 'js', 'img', 'font');
-		if (!empty($config['type']) && is_array($config['type'])) {
-			$type = $config['type'];
+		$action = array('css', 'js', 'img', 'font');
+		if (!empty($config['action']) && is_array($config['action'])) {
+			$action = $config['action'];
 		}
 
 		if (!empty($config['cssDir'])
 			&& is_readable($config['cssDir'])
-			&& in_array('css', $type)
+			&& in_array('css', $action)
 		) {
 			self::$cssDir = $config['cssDir'];
 		}
 
 		if (!empty($config['jsDir'])
 			&& is_readable($config['jsDir'])
-			&& in_array('js', $type)
+			&& in_array('js', $action)
 		) {
 			self::$jsDir = $config['jsDir'];
 		}
 
 		if (!empty($config['imgDir'])
 			&& is_readable($config['imgDir'])
-			&& in_array('img', $type)
+			&& in_array('img', $action)
 		) {
 			self::$imgDir = $config['imgDir'];
 		}
 
 		if (!empty($config['fontDir'])
 			&& is_readable($config['fontDir'])
-			&& in_array('font', $type)
+			&& in_array('font', $action)
 		) {
 			self::$fontDir = $config['fontDir'];
 		}
@@ -191,7 +191,7 @@ class S3 extends ModulesAbstract {
 		}
 
 		if (!empty(self::$fontDir)) {
-			$exts = array('.eot', '.svg', '.ttf', '.woff');
+			$exts = array('.eot', '.svg', '.ttf', '.woff', '.otf');
 			$files = array_merge($files, $this->_findFilesRecursive(self::$fontDir, $exts));
 		}
 

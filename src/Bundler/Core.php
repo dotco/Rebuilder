@@ -52,8 +52,8 @@ class Core {
 	 */
 	public static function init($config = array())
 	{
-        if (!empty($config['bundler']['config']['bundles'])) {
-            self::$bundles = $config['bundler']['config']['bundles'];
+        if (!empty($config['bundler']['bundles'])) {
+            self::$bundles = $config['bundler']['bundles'];
         }
 
         if (!empty($config['csstidy'])) {
@@ -86,6 +86,7 @@ class Core {
 	public static function css($bundle)
 	{
 		if (is_array($bundle)) {
+			// handle external bundles
 			if (isset($bundle['external']) && $bundle['external']) {
 				echo '<link rel="stylesheet" type="text/css" href="' . $bundle['name'] . '">' . PHP_EOL;
 				return;
@@ -95,6 +96,7 @@ class Core {
 			$path = $bundle['name'];
 			$dir = rtrim(dirname($bundle['name']), '/') . '/';
 
+			// if it already ends in css, remove so we can apply JSMin and CSSTidy later
 			if (strpos($bundle['name'], '.css') !== FALSE) {
 				$bundle = basename($bundle['name'], '.css');
 			} else {
@@ -106,9 +108,9 @@ class Core {
 			$path = $bundle;
 		}
 
+		// get the relative path to the bundle
 		if (!isset($dir)) {
-			// get the relative path to the bundle
-			$dir = isset(self::$csstidy['config']['relpath']) ? self::$csstidy['config']['relpath'] : '/';
+			$dir = isset(self::$csstidy['relpath']) ? self::$csstidy['relpath'] : '/';
 			$dir .= 'bundles/';
 		}
 
@@ -124,6 +126,9 @@ class Core {
 			if (strpos($path, '.compressed.css') === FALSE) {
 				$filename .= '.compressed';
 			}
+		} else {
+			// oh sh*t, load each file from the bundle config settings normally
+			return self::loadUncompressed(self::$bundles[$bundle]['css'], 'css');
 		}
 
 		// check s3 settings
@@ -135,9 +140,9 @@ class Core {
 			}
 
 			// grab the bucket url
-			$s3BaseUrl = self::$s3['config']['bucketUrl'];
-			if (!empty(self::$s3['config']['uriPrefix'])) {
-				$s3BaseUrl .= self::$s3['config']['uriPrefix'];
+			$s3BaseUrl = self::$s3['bucketUrl'];
+			if (!empty(self::$s3['uriPrefix'])) {
+				$s3BaseUrl .= self::$s3['uriPrefix'];
 			}
 
 			$filepath = $s3BaseUrl . $dir . $filename . '.css';
@@ -179,12 +184,17 @@ class Core {
 		} else if (empty(self::$bundles[$bundle]['js'])) {
 			return false;
 		} else {
+			// set the path to be the same as the bundle
 			$path = $bundle;
 		}
 
+		// load the compressed bundle
+
+
+
+		// get the relative path to the bundle
 		if (!isset($dir)) {
-			// get the relative path to the bundle
-			$dir = isset(self::$csstidy['config']['relpath']) ? self::$csstidy['config']['relpath'] : '/';
+			$dir = isset(self::$csstidy['relpath']) ? self::$csstidy['relpath'] : '/';
 			$dir .= 'bundles/';
 		}
 
@@ -213,9 +223,9 @@ class Core {
 			}
 
 			// grab the bucket url
-			$s3BaseUrl = self::$s3['config']['bucketUrl'];
-			if (!empty(self::$s3['config']['uriPrefix'])) {
-				$s3BaseUrl .= self::$s3['config']['uriPrefix'];
+			$s3BaseUrl = self::$s3['bucketUrl'];
+			if (!empty(self::$s3['uriPrefix'])) {
+				$s3BaseUrl .= self::$s3['uriPrefix'];
 			}
 
 			$filepath = $s3BaseUrl . $dir . $filename . '.js';
@@ -224,6 +234,141 @@ class Core {
 		}
 
 		echo '<script type="text/javascript" src="' . $filepath . '"></script>' . PHP_EOL;
+	}
+
+	/**
+	 * Load either CSS or JS.
+	 *
+	 * @access	public static
+	 */
+	public static function asset($bundle, $type)
+	{
+		if ($type == 'css') {
+			$format = '<script type="text/javascript" src="%s"></script>' . PHP_EOL;
+			$config = self::$csstidy;
+			$ext = '.css';
+		} else {
+			$format = '<link rel="stylesheet" type="text/css" href="%s">' . PHP_EOL;
+			$config = self::$jsmin;
+			$ext = '.js';
+		}
+
+		// a bundle array means special settings or remote file
+		if (is_array($bundle)) {
+			if (isset($bundle['external']) && $bundle['external']) {
+				echo sprintf($format, $bundle['name']);
+				return;
+			}
+
+			// we're loading a normal asset; not a bundle
+			$path = $bundle['name'];
+			$dir = rtrim(dirname($bundle['name']), '/') . '/';
+
+			// if we had a path to a file, strip down to the name
+			if (strpos($bundle['name'], $ext) !== FALSE) {
+				$bundle = basename($bundle['name'], $ext);
+			} else {
+				$bundle = $bundle['name'];
+			}
+		} else if (empty(self::$bundles[$bundle][$type])) {
+			return false;
+		} else {
+			// set the path to be the same as the bundle
+			$path = $bundle;
+		}
+
+		// if loading a bundle and not a normal asset, get the relative bundle path
+		if (!isset($dir)) {
+			$dir = isset($config['relpath']) ? rtrim($config['relpath'], '/') . '/' : '/';
+			$dir .= 'bundles/';
+		}
+
+		// assumed filename of bundle/include (without extension)
+		$filename = $bundle;
+
+		// check for minify settings
+		if (isset(self::$jsmin['minify']) && self::$jsmin['minify'] === TRUE) {
+			if (strpos($path, '.min.js') === FALSE) {
+				$filename .= '.min';
+			}
+		} else if (isset(self::$jsmin['combine_files']) && self::$jsmin['combine_files'] === TRUE) {
+			if (strpos($path, '.compressed.js') === FALSE) {
+				$filename .= '.compressed';
+			}
+		}
+
+		if (isset(self::$s3['enabled']) && self::$s3['enabled'] === TRUE) {
+			if (isset(self::$gzip['enabled']) && self::$gzip['enabled'] === TRUE) {
+				// ensure the user can handle gzipped files
+				if (isset($_SERVER['HTTP_ACCEPT_ENCODING']) && strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') !== false) {
+					if (strpos($path, '.gz.js') === FALSE) {
+						$filename .= '.gz';
+					}
+				}
+			}
+
+			// grab the bucket url
+			$s3BaseUrl = self::$s3['bucketUrl'];
+			if (!empty(self::$s3['uriPrefix'])) {
+				$s3BaseUrl .= self::$s3['uriPrefix'];
+			}
+
+			$filepath = $s3BaseUrl . $dir . $filename . '.js';
+		} else {
+			$filepath = $dir . $filename . '.js';
+		}
+
+		echo '<script type="text/javascript" src="' . $filepath . '"></script>' . PHP_EOL;
+	}
+
+	/**
+	 * Loads a bundle compressed (either combined or minified).
+	 *
+	 * @access	public static
+	 *
+	 * @return	void
+	 */
+	public static function loadCompressed($type)
+	{
+		if ($type == 'css') {
+			$format = '<script type="text/javascript" src="%s"></script>' . PHP_EOL;
+			$config = self::$csstidy;
+		} else {
+			$format = '<link rel="stylesheet" type="text/css" href="%s">' . PHP_EOL;
+			$config = self::$jsmin;
+		}
+
+
+	}
+
+	/**
+	 * Load the bundle in uncompressed, unminified format. This means we break
+	 * it apart and serve each individual file.
+	 *
+	 * @access	public static
+	 * @param	array	$files
+	 * @param	string	$type
+	 */
+	public static function loadUncompressed($files, $type)
+	{
+		if ($type == 'css') {
+			$format = '<script type="text/javascript" src="%s"></script>' . PHP_EOL;
+			$config = self::$csstidy;
+		} else {
+			$format = '<link rel="stylesheet" type="text/css" href="%s">' . PHP_EOL;
+			$config = self::$jsmin;
+		}
+
+		// set the relative filepath before the filepath
+		$dir = isset($config['relpath']) ? $config['relpath'] : '/';
+		$dir = rtrim($dir, '/') . '/';
+
+		// iterate over each file
+		foreach ($files as $file) {
+			$filepath = $dir . ltrim($file, '/');
+			$filepath = str_replace('//', '/', $filepath);
+			echo sprintf($format, $filepath);
+		}
 	}
 
     /**
