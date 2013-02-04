@@ -8,11 +8,11 @@ require_once(__DIR__ . '/../../../autoload.php');
 $options = getopt('c:e::m:a:h', array('config:', 'env::', 'modules:', 'action:', 'help'));
 
 // help section
-if (isset($options['help']) || isset($options['h'])) {
+if (isset($options['help']) || isset($options['h'])
+    || (empty($options['modules']) && empty($options['m']))) {
     $str = PHP_EOL . 'Usage: ' . PHP_EOL;
     $str .= '--------------------' . PHP_EOL;
-    $str .= 'rebuilder [options] -c "/path/to/config.php"' . PHP_EOL;
-    $str .= 'rebuilder ';
+    $str .= 'rebuilder [options] -c "/path/to/config.php"' . PHP_EOL . PHP_EOL;
 
     $str .= 'Short Options: ' . PHP_EOL;
     $str .= '--------------------' . PHP_EOL;
@@ -27,7 +27,7 @@ if (isset($options['help']) || isset($options['h'])) {
     $str .= "--config=\"<path|file>\"\tThe full/absolute path to your configuration file." . PHP_EOL;
     $str .= "--env=\"<env>\"\tThe environment you wish to use in the configuration file." . PHP_EOL;
     $str .= "--modules=\"<modules>\"\tComma separated list of the modules you want to run, in queued order" . PHP_EOL;
-    $str .= "--action=\"<actions>\"\tComma separated list of the module actions you want to perform, in queued order" . PHP_EOL;
+    $str .= "--action=\"<actions>\"\tComma separated list of the module actions you want to perform, in queued order" . PHP_EOL . PHP_EOL;
 
     $str .= 'Available Built-In Modules: ' . PHP_EOL;
     $str .= '--------------------' . PHP_EOL;
@@ -41,7 +41,8 @@ if (isset($options['help']) || isset($options['h'])) {
 
     $str .= "gzip -\tA module for generating gzipped versions of files. This module
     is intended to be used in combination with the Amazon S3 module to properly
-    serve gzipped media assets." . PHP_EOL . PHP_EOL;
+    serve gzipped media assets. Accepts the --action parameter with possible values
+    css and js." . PHP_EOL . PHP_EOL;
 
     $str .= "jsmin -\tA module for combining and/or minifying JS files. You can
     combine and minify multiple files or minify just a single file. Filenames
@@ -51,13 +52,18 @@ if (isset($options['help']) || isset($options['h'])) {
     images) to an Amazon S3 bucket. Allows for prefixing your assets with a string
     to mimic your local folder structure. Checks files for modifications via size
     comparison before attempting to upload to conserve bandwidth. Special handling
-    added to support gzipped files with .gz in their name." . PHP_EOL . PHP_EOL;
+    added to support gzipped files with .gz in their name. Accepts the --action
+    parameter with possible values css, js, font, and img." . PHP_EOL . PHP_EOL;
 
     $str .= 'Running a single module: ' . PHP_EOL;
     $str .= '--------------------' . PHP_EOL;
+    $str .= '# no environment specified, assumes the config has no environments.' . PHP_EOL;
+    $str .= 'rebuilder -m "csstidy" -c "/path/to/config.php"' . PHP_EOL . PHP_EOL;
 
     $str .= 'Running multiple modules: ' . PHP_EOL;
     $str .= '--------------------' . PHP_EOL;
+    $str .= '# local environment specified, assumes the config has environments.' . PHP_EOL;
+    $str .= 'rebuilder -m "bundler,jsmin,csstidy" -e local -c "/path/to/config.php"' . PHP_EOL . PHP_EOL;
 
     $str .= 'Other examples: ' . PHP_EOL;
     $str .= '--------------------' . PHP_EOL;
@@ -67,6 +73,11 @@ if (isset($options['help']) || isset($options['h'])) {
     $str .= PHP_EOL;
     echo $str;
     die;
+}
+
+// some requirements
+if (empty($options['config']) && empty($options['c'])) {
+    die(PHP_EOL . 'You must specify a configuration file.' . PHP_EOL);
 }
 
 /**
@@ -84,37 +95,34 @@ function _array_merge_recursive(array $parent, array $override)
     return $parent;
 }
 
-// check on configuration file to load
-if (!empty($options['config']) || !empty($options['c'])) {
-    // attempt to load the file
-    $file = !empty($options['config']) ? $options['config'] : $options['c'];
-    if (!file_exists($file)) {
-        throw new Exception('Config file does not exist: ' . $file);
-    }
+// attempt to load the file
+$file = !empty($options['config']) ? $options['config'] : $options['c'];
+if (!file_exists($file)) {
+    die(PHP_EOL . 'Config file does not exist: ' . $file . PHP_EOL);
+}
 
-    // load external config file
-    $config = include_once($file);
-
-    if (isset($config['environments'])) {
-        foreach ((array) $config['environments'] as $env => $parent_env) {
-            if (isset($config[$parent_env]) && isset($config[$env])) {
-                $config[$env] = _array_merge_recursive($config[$parent_env], $config[$env]);
-            }
+// load external config file
+$config = include_once($file);
+if (isset($config['environments'])) {
+    foreach ((array) $config['environments'] as $env => $parent_env) {
+        if (isset($config[$parent_env]) && isset($config[$env])) {
+            $config[$env] = _array_merge_recursive($config[$parent_env], $config[$env]);
         }
     }
-
-    // check on whether we need to load a specific environmental within the config
-    $environment = !empty($options['env'])
-        ? $options['env'] : (!empty($options['e'])
-            ? $options['e']
-            : FALSE);
-    define('ENVIRONMENT', $environment);
-
-    // set config to environment
-    if (ENVIRONMENT && isset($config[ENVIRONMENT])) {
-        $config = $config[ENVIRONMENT];
-    }
 }
+
+// check on whether we need to load a specific environmental within the config
+$environment = !empty($options['env'])
+    ? $options['env'] : (!empty($options['e'])
+        ? $options['e']
+        : FALSE);
+define('ENVIRONMENT', $environment);
+
+// set config to environment
+if (ENVIRONMENT && isset($config[ENVIRONMENT])) {
+    $config = $config[ENVIRONMENT];
+}
+
 
 // check for the bundle(s)
 if (!empty($options['modules']) || !empty($options['m'])) {
