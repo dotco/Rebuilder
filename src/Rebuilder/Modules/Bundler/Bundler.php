@@ -88,11 +88,11 @@ class Bundler extends ModulesAbstract {
 	{
         // iterate over bundles to perform creation
         foreach ($this->bundles as $bundle => $options) {
-            if (!empty($options['js']['files'])) {
+            if (!empty($options['js'])) {
                 $this->createJsBundle($bundle, $options['js']);
             }
 
-            if (!empty($options['css']['files'])) {
+            if (!empty($options['css'])) {
                 $this->createCssBundle($bundle, $options['css']);
             }
         }
@@ -111,15 +111,14 @@ class Bundler extends ModulesAbstract {
      *
      * @access  public
      * @param   string  $bundle
-     * @param   array   $options
+     * @param   array   $files
      */
-    public function createJsBundle($bundle, $options)
+    public function createJsBundle($bundle, $files)
     {
         // merge the config with files and override some core options
         $config = $this->jsmin;
 
         // add full path to relative filepath
-        $files = $options['files'];
         foreach ($files as $k => $v) {
             $files[$k] = rtrim($config['basepath'], '/') . '/'
                 . rtrim($config['relpath'], '/') . '/'
@@ -141,15 +140,14 @@ class Bundler extends ModulesAbstract {
      *
      * @access  public
      * @param   string  $bundle
-     * @param   array   $options
+     * @param   array   $files
      */
-    public function createCssBundle($bundle, $options)
+    public function createCssBundle($bundle, $files)
     {
         // merge the config with files
         $config = $this->csstidy;
 
         // add full path to relative filepath
-        $files = $options['files'];
         foreach ($files as $k => $v) {
             $files[$k] = rtrim($config['basepath'], '/') . '/'
                 . rtrim($config['relpath'], '/') . '/'
