@@ -1,4 +1,4 @@
-#!/usr/bin/php
+#!/usr/bin/env php
 <?php
 // load the composer autoloader
 // backtrack from /vendor/dotco/rebuilder/bin/rebuilder to /vendor/
