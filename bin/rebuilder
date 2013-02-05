@@ -11,26 +11,26 @@ $options = getopt('c:e::m:a:h', array('config:', 'env::', 'modules:', 'action:',
 if (isset($options['help']) || isset($options['h'])
     || (empty($options['modules']) && empty($options['m']))) {
     $str = PHP_EOL . 'Usage: ' . PHP_EOL;
-    $str .= '--------------------' . PHP_EOL;
+    $str .= '------------------------------------------------------------' . PHP_EOL;
     $str .= 'rebuilder [options] -c "/path/to/config.php"' . PHP_EOL . PHP_EOL;
 
     $str .= 'Short Options: ' . PHP_EOL;
-    $str .= '--------------------' . PHP_EOL;
+    $str .= '------------------------------------------------------------' . PHP_EOL;
     $str .= "-c <path|file>\tThe full/absolute path to your configuration file." . PHP_EOL;
-    $str .= "-e <env>\t\tThe environment you wish to use in the configuration file." . PHP_EOL;
+    $str .= "-e <env>\tThe environment you wish to use in the configuration file." . PHP_EOL;
     $str .= "-m <modules>\tComma separated list of the modules you want to run, in queued order" . PHP_EOL;
     $str .= "-a <action>\tComma separated list of the module actions you want to perform, in queued order" . PHP_EOL;
     $str .= "-h\t\tThis help document." . PHP_EOL . PHP_EOL;
 
     $str .= 'Long Options: ' . PHP_EOL;
-    $str .= '--------------------' . PHP_EOL;
+    $str .= '------------------------------------------------------------' . PHP_EOL;
     $str .= "--config=\"<path|file>\"\tThe full/absolute path to your configuration file." . PHP_EOL;
-    $str .= "--env=\"<env>\"\tThe environment you wish to use in the configuration file." . PHP_EOL;
+    $str .= "--env=\"<env>\"\t\tThe environment you wish to use in the configuration file." . PHP_EOL;
     $str .= "--modules=\"<modules>\"\tComma separated list of the modules you want to run, in queued order" . PHP_EOL;
     $str .= "--action=\"<actions>\"\tComma separated list of the module actions you want to perform, in queued order" . PHP_EOL . PHP_EOL;
 
     $str .= 'Available Built-In Modules: ' . PHP_EOL;
-    $str .= '--------------------' . PHP_EOL;
+    $str .= '------------------------------------------------------------' . PHP_EOL;
     $str .= "bundler -A module wrapping the CSSTidy and JSMin modules which
     allows for auto creation of minified and compressed CSS and JS \"bundles\".
     Bundles are essentially combined files of a user supplied name which are intended
@@ -56,17 +56,17 @@ if (isset($options['help']) || isset($options['h'])
     parameter with possible values css, js, font, and img." . PHP_EOL . PHP_EOL;
 
     $str .= 'Running a single module: ' . PHP_EOL;
-    $str .= '--------------------' . PHP_EOL;
+    $str .= '------------------------------------------------------------' . PHP_EOL;
     $str .= '# no environment specified, assumes the config has no environments.' . PHP_EOL;
     $str .= 'rebuilder -m "csstidy" -c "/path/to/config.php"' . PHP_EOL . PHP_EOL;
 
     $str .= 'Running multiple modules: ' . PHP_EOL;
-    $str .= '--------------------' . PHP_EOL;
+    $str .= '------------------------------------------------------------' . PHP_EOL;
     $str .= '# local environment specified, assumes the config has environments.' . PHP_EOL;
     $str .= 'rebuilder -m "bundler,jsmin,csstidy" -e local -c "/path/to/config.php"' . PHP_EOL . PHP_EOL;
 
     $str .= 'Other examples: ' . PHP_EOL;
-    $str .= '--------------------' . PHP_EOL;
+    $str .= '------------------------------------------------------------' . PHP_EOL;
     $str .= 'rebuilder -m bundler -e production -c "/path/to/config.php"' . PHP_EOL;
     $str .= 'rebuilder -m "bundler,jsmin,gzip" -a js  -e local -c "/path/to/config.php"' . PHP_EOL;
 
