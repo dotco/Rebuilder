@@ -110,6 +110,8 @@ class Core {
 	 */
 	public static function asset($bundle, $type)
 	{
+		$isBundle = true;
+
 		if ($type == 'css') {
 			$format = '<link rel="stylesheet" type="text/css" href="%s">' . PHP_EOL;
 			$config = self::$csstidy;
@@ -128,6 +130,7 @@ class Core {
 
 		// special handling for non-bundle assets
 		if (strpos($bundle, '*') === 0) {
+			$isBundle = false;
 			$bundle = substr($bundle, 1);
 			$path = $bundle;
 			$dir = rtrim(dirname($bundle), '/') . '/';
@@ -159,11 +162,11 @@ class Core {
 			}
 		} else {
 			// we are loading the uncompressed bundle files individually
-			return self::loadUncompressed(self::$bundles[$bundle][$type]);
+			return self::loadUncompressed($bundle, $filename, $dir, $type, $ext, $format, $config, $isBundle);
 		}
 
 		// we are loading some form of minified/compressed bundle
-		return self::loadCompressed($bundle, $filename, $dir, $ext, $format, $config);
+		return self::loadCompressed($bundle, $filename, $dir, $ext, $format, $config, $isBundle);
 	}
 
 	/**
@@ -176,9 +179,10 @@ class Core {
 	 * @param	string	$ext
 	 * @param	string	$format
 	 * @param	array	$config
+	 * @param	bool	$isBundle
 	 * @return	void
 	 */
-	public static function loadCompressed($bundle, $filename, $dir, $ext, $format, $config)
+	public static function loadCompressed($bundle, $filename, $dir, $ext, $format, $config, $isBundle)
 	{
 		if (isset(self::$s3['enabled']) && self::$s3['enabled'] === TRUE) {
 			if (isset(self::$gzip['enabled']) && self::$gzip['enabled'] === TRUE) {
@@ -218,29 +222,47 @@ class Core {
 	 * it apart and serve each individual file.
 	 *
 	 * @access	public static
-	 * @param	array	$files
+	 * @param	string	$bundle
+	 * @param	string	$filename
+	 * @param	string	$dir
 	 * @param	string	$type
+	 * @param	string	$ext
+	 * @param	string	$format
+	 * @param	array	$config
+	 * @param	bool	$isBundle
 	 */
-	public static function loadUncompressed($files, $type)
+	public static function loadUncompressed($bundle, $filename, $dir, $type, $ext, $format, $config, $isBundle)
 	{
-		if ($type == 'css') {
-			$format = '<link rel="stylesheet" type="text/css" href="%s">' . PHP_EOL;
-			$config = self::$csstidy;
-			$ext = '.css';
-		} else {
-			$format = '<script type="text/javascript" src="%s"></script>' . PHP_EOL;
-			$config = self::$jsmin;
-			$ext = '.js';
-		}
+		$dir = str_replace('bundles/', '', $dir);
 
-		// set the relative filepath before the filepath
-		$dir = isset($config['relpath']) ? $config['relpath'] : '/';
-		$dir = rtrim($dir, '/') . '/';
+		// if we need to load an uncompressed bundle, we actual load each file
+		if ($isBundle && !empty(self::$bundles[$bundle][$type])) {
+			// iterate over each file
+			foreach (self::$bundles[$bundle][$type] as $file) {
+				$filepath = $dir . ltrim($file, '/');
+				$filepath = str_replace('//', '/', $filepath);
+				if (!empty($config['find_replace'])) {
+					$filepath = str_replace(
+						array_keys($config['find_replace']),
+						array_values($config['find_replace']),
+						$filepath
+					);
+				}
 
-		// iterate over each file
-		foreach ($files as $file) {
-			$filepath = $dir . ltrim($file, '/');
-			$filepath = str_replace('//', '/', $filepath);
+				echo sprintf($format, $filepath);
+			}
+		} else if (!$isBundle) {
+			// perform any necessary renaming
+			$filepath = $dir . $filename . $ext;
+			if (!empty($config['find_replace'])) {
+				$filepath = str_replace(
+					array_keys($config['find_replace']),
+					array_values($config['find_replace']),
+					$filepath
+				);
+			}
+
+			// just load the single uncompressed file
 			echo sprintf($format, $filepath);
 		}
 	}
