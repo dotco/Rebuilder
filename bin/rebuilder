@@ -31,20 +31,20 @@ if (isset($options['help']) || isset($options['h'])
 
     $str .= 'Available Built-In Modules: ' . PHP_EOL;
     $str .= '------------------------------------------------------------' . PHP_EOL;
-    $str .= "bundler -A module wrapping the CSSTidy and JSMin modules which
+    $str .= "bundler - A module wrapping the CSSTidy and JSMin modules which
     allows for auto creation of minified and compressed CSS and JS \"bundles\".
     Bundles are essentially combined files of a user supplied name which are intended
     to be used as pluggable media assets on your website." . PHP_EOL . PHP_EOL;
 
-    $str .= "csstidy -A module for combining and/or minifying CSS files. You
+    $str .= "csstidy - A module for combining and/or minifying CSS files. You
     can combine and minify multiple files or minify just a single file." . PHP_EOL . PHP_EOL;
 
-    $str .= "gzip -A module for generating gzipped versions of files. This module
+    $str .= "gzip - A module for generating gzipped versions of files. This module
     is intended to be used in combination with the Amazon S3 module to properly
     serve gzipped media assets. Accepts the --action parameter with possible values
     css and js." . PHP_EOL . PHP_EOL;
 
-    $str .= "jsmin -A module for combining and/or minifying JS files. You can
+    $str .= "jsmin - A module for combining and/or minifying JS files. You can
     combine and minify multiple files or minify just a single file. Filenames
     containing .min will be excluded from minification." . PHP_EOL . PHP_EOL;
 

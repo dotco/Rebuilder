@@ -130,11 +130,11 @@ class CSSTidy extends ModulesAbstract {
 			$this->find_replace = $config['find_replace'];
 		}
 
-		if (!empty($config['combine_files'])) {
+		if (!empty($config['combine'])) {
 			$this->combine_files = TRUE;
 		}
 
-		if (!empty($config['minify_files'])) {
+		if (!empty($config['minify'])) {
 			$this->minify_files = TRUE;
 		}
 
