@@ -188,7 +188,7 @@ class Core {
 			if (isset(self::$gzip['enabled']) && self::$gzip['enabled'] === TRUE) {
 				// ensure the user can handle gzipped files
 				if (isset($_SERVER['HTTP_ACCEPT_ENCODING']) && strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') !== false) {
-					if (strpos($path, '.gz' . $ext) === FALSE) {
+					if (strpos($filename, '.gz' . $ext) === FALSE) {
 						$filename .= '.gz';
 					}
 				}
