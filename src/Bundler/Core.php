@@ -218,8 +218,12 @@ class Core {
 			);
 		}
 
-		// ensure no double forward slash
+		// ensure no double forward slash other than leading
+		$isDoubleForward = strpos($filepath, '//') === 0;
 		$filepath = str_replace('//', '/', $filepath);
+		if ($isDoubleForward) {
+			$filepath = '/' . $filepath;
+		}
 
 		echo sprintf($format, $filepath);
 	}
