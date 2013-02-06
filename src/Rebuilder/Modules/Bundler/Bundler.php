@@ -24,10 +24,10 @@ use \Exception as Exception;
  * of Bundler in your application to serve up different files depending on
  * your environment and requirements.
  *
- * @package		Bundler
- * @copyright	2013 .CO Internet <http://go.co>
- * @author		Corey Ballou <corey@go.co>
- * @link		http://github.com/dotco/Rebuilder
+ * @package             Bundler
+ * @copyright   2013 .CO Internet <http://go.co>
+ * @author              Corey Ballou <corey@go.co>
+ * @link                http://github.com/dotco/Rebuilder
  */
 class Bundler extends ModulesAbstract {
 
@@ -61,31 +61,31 @@ class Bundler extends ModulesAbstract {
      */
     private $public_dir;
 
-	/**
-	 * Default constructor for setting up configuration options.
-	 *
-	 * @access	public
-	 * @param	array   $config
-	 * @return	void
-	 */
-	public function __construct($config = array(), \Rebuilder\Loader $loader)
-	{
+    /**
+     * Default constructor for setting up configuration options.
+     *
+     * @access      public
+     * @param       array   $config
+     * @return      void
+     */
+    public function __construct($config = array(), \Rebuilder\Loader $loader)
+    {
         // set the loader
         $this->loader = $loader;
 
         // handle configuration setup and merging
         $this->mergeConfigs($config);
-	}
+        }
 
-	/**
-	 * Special method for the Rebuilder module which executes and runs
-	 * the bundler.
-	 *
-	 * @access	public
-	 * @return	mixed
-	 */
-	public function run()
-	{
+    /**
+     * Special method for the Rebuilder module which executes and runs
+     * the bundler.
+     *
+     * @access      public
+     * @return      mixed
+     */
+    public function run()
+    {
         // iterate over bundles to perform creation
         foreach ($this->bundles as $bundle => $options) {
             if (!empty($options['js'])) {
@@ -285,75 +285,76 @@ class Bundler extends ModulesAbstract {
         );
     }
 
-	/**
-	 * Custom implementation of array merge recursive for config files. Ensures
-	 * that matching array keys do not create nested arrays but rather override.
-	 *
-	 * @access	protected
-	 *
-	 */
-	protected function _array_merge_recursive(array $parent, array $override)
-	{
-		foreach ($override as $key => $value) {
-			if (is_array($value) && isset($parent[$key]) && is_array($parent[$key])) {
-				$parent[$key] = $this->_array_merge_recursive($parent[$key], $value);
-			} else {
-				$parent[$key] = $value;
-			}
-		}
-		return $parent;
-	}
+    /**
+     * Custom implementation of array merge recursive for config files. Ensures
+     * that matching array keys do not create nested arrays but rather override.
+     *
+     * @access      protected
+     *
+     */
+    protected function _array_merge_recursive(array $parent, array $override)
+    {
+        foreach ($override as $key => $value) {
+            if (is_array($value) && isset($parent[$key]) && is_array($parent[$key])) {
+                $parent[$key] = $this->_array_merge_recursive($parent[$key], $value);
+            } else {
+                $parent[$key] = $value;
+            }
+        }
 
-	/**
-	 * Handles recursively finding files in a directory matching a given extension
-	 * or extensions.
-	 *
-	 * @access	protected
-	 * @param	string		$dir
-	 * @param	array		$ext
-	 * @return	array
-	 */
-	protected function _findFilesRecursive($dir, $ext = array())
-	{
-		// return files
-		$files = array();
+        return $parent;
+    }
 
-		$it = new \RecursiveIteratorIterator(
-			new \RecursiveDirectoryIterator($dir, \FilesystemIterator::KEY_AS_PATHNAME)
-		);
+    /**
+     * Handles recursively finding files in a directory matching a given extension
+     * or extensions.
+     *
+     * @access      protected
+     * @param       string          $dir
+     * @param       array           $ext
+     * @return      array
+     */
+    protected function _findFilesRecursive($dir, $ext = array())
+    {
+        // return files
+        $files = array();
 
-		foreach ($it as $dir => $info) {
-			if ($info->isDir()) {
-				continue;
-			}
+        $it = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::KEY_AS_PATHNAME)
+        );
 
-			$fileExt = '.' . strtolower($info->getExtension());
-			if (!in_array($fileExt, (array) $ext)) {
-				continue;
-			}
+        foreach ($it as $dir => $info) {
+            if ($info->isDir()) {
+                continue;
+            }
 
-			// get the full path
-			$filepath = $info->getPathname();
-			$bucketPath = $filepath;
-			if (!empty(self::$baseDir)) {
-				$bucketPath = str_replace(self::$baseDir, '', $bucketPath);
-				$bucketPath = ltrim($bucketPath, '/');
-				if (!empty(self::$uriPrefix)) {
-					$bucketPath = self::$uriPrefix . $bucketPath;
-				}
-			}
+            $fileExt = '.' . strtolower($info->getExtension());
+            if (!in_array($fileExt, (array) $ext)) {
+                continue;
+            }
 
-			$files[] = array(
-				'extension' => strtolower($info->getExtension()),
-				'filename' => $info->getFilename(),
-				'filesize' => $info->getSize(),
-				'filepath' => $filepath,
-				'bucketPath' => $bucketPath,
-				'lastModified' => $info->getMTime()
-			);
-		}
+            // get the full path
+            $filepath = $info->getPathname();
+            $bucketPath = $filepath;
+            if (!empty(self::$baseDir)) {
+                $bucketPath = str_replace(self::$baseDir, '', $bucketPath);
+                $bucketPath = ltrim($bucketPath, '/');
+                if (!empty(self::$uriPrefix)) {
+                    $bucketPath = self::$uriPrefix . $bucketPath;
+                }
+            }
 
-		return $files;
-	}
+            $files[] = array(
+                'extension' => strtolower($info->getExtension()),
+                'filename' => $info->getFilename(),
+                'filesize' => $info->getSize(),
+                'filepath' => $filepath,
+                'bucketPath' => $bucketPath,
+                'lastModified' => $info->getMTime()
+            );
+        }
+
+        return $files;
+    }
 
 }

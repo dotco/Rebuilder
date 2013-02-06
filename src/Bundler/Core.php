@@ -205,6 +205,7 @@ class Core {
 			$filepath = $dir . $filename . $ext;
 		}
 
+		/*
 		// lasty perform any necessary renaming
 		if (!empty($config['find_replace'])) {
 			$filepath = str_replace(
@@ -213,6 +214,10 @@ class Core {
 				$filepath
 			);
 		}
+		*/
+
+		// ensure no double forward slash
+		$filepath = str_replace('//', '/', $filepath);
 
 		echo sprintf($format, $filepath) . PHP_EOL;
 	}
