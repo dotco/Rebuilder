@@ -266,12 +266,10 @@ class S3 extends ModulesAbstract {
 		if (!empty($toBeInvalidated) && !empty(self::$cloudFrontDistributionId)) {
 			// if we have less than 1000, we can batch invalidate
 			if (count($toBeInvalidated) <= 1000) {
-				/*
 				self::invalidateDistribution(
 					self::$cloudFrontDistributionId,
 					$toBeInvalidated
 				);
-				*/
 			} else {
 				// TODO: split into batches
 			}

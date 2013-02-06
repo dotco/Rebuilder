@@ -208,9 +208,13 @@ class Core {
 				}
 			}
 
-			// grab the bucket url
-			$s3BaseUrl = self::$s3['bucketUrl'];
-			$filepath = $s3BaseUrl . $filepath;
+			// grab the bucket url (also handles cloudfront)
+			if (!empty(self::$s3['cloudFrontBucketUrl'])) {
+				$baseUrl = self::$s3['cloudFrontBucketUrl'];
+			} else {
+				$baseUrl = self::$s3['bucketUrl'];
+			}
+			$filepath = $baseUrl . $filepath;
 
 		} else {
 			$filepath = $dir . $filename . $ext;
