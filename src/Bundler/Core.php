@@ -194,33 +194,41 @@ class Core {
 				}
 			}
 
+			// $dir is $relpath . '/bundles/', so ensure that find_replace
+			// doesnt create duplicate bucket names
+			$filepath = $dir . $filename . $ext;
+			if (!empty($config['find_replace'])) {
+				foreach ($config['find_replace'] as $k => $v) {
+					if (strpos($v, self::$s3['bucket']) !== FALSE) {
+						$v = str_replace($v, self::$s3['bucket']);
+					}
+					$filepath = str_replace($k, $v, $filepath);
+				}
+			}
+
 			// grab the bucket url
 			$s3BaseUrl = self::$s3['bucketUrl'];
-
-			/*
-			if (!empty(self::$s3['uriPrefix'])) {
-				$s3BaseUrl .= self::$s3['uriPrefix'];
-			}
-			*/
-
-			$filepath = $s3BaseUrl . $dir . $filename . $ext;
+			$filepath = $s3BaseUrl . $filepath;
 
 		} else {
 			$filepath = $dir . $filename . $ext;
+
+			// lasty perform any necessary renaming
+			if (!empty($config['find_replace'])) {
+				$filepath = str_replace(
+					array_keys($config['find_replace']),
+					array_values($config['find_replace']),
+					$filepath
+				);
+			}
 		}
 
-		// lasty perform any necessary renaming
-		if (!empty($config['find_replace'])) {
-			$filepath = str_replace(
-				array_keys($config['find_replace']),
-				array_values($config['find_replace']),
-				$filepath
-			);
-		}
+
 
 		// ensure no double forward slash other than leading
 		$isDoubleForward = strpos($filepath, '//') === 0;
 		$filepath = str_replace('//', '/', $filepath);
+
 		if ($isDoubleForward) {
 			$filepath = '/' . $filepath;
 		}
