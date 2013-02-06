@@ -200,8 +200,10 @@ class Core {
 			if (!empty($config['find_replace'])) {
 				foreach ($config['find_replace'] as $k => $v) {
 					if (strpos($v, self::$s3['bucket']) !== FALSE) {
-						$v = str_replace($v, self::$s3['bucket']);
+						$v = str_replace(self::$s3['bucket'], '', $v);
+						$v = str_replace('//', '/', $v);
 					}
+
 					$filepath = str_replace($k, $v, $filepath);
 				}
 			}
@@ -223,12 +225,9 @@ class Core {
 			}
 		}
 
-
-
 		// ensure no double forward slash other than leading
 		$isDoubleForward = strpos($filepath, '//') === 0;
 		$filepath = str_replace('//', '/', $filepath);
-
 		if ($isDoubleForward) {
 			$filepath = '/' . $filepath;
 		}
