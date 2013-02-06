@@ -249,7 +249,7 @@ class S3 extends ModulesAbstract {
 							error_log('Updating file: ' . $f['bucketPath']);
 
 							// add to invalidation array
-							$toBeInvalidated[] = $f['bucketPath'];
+							$toBeInvalidated[] = '/' . ltrim($f['bucketPath'], '/');
 						}
 
 					} else {
