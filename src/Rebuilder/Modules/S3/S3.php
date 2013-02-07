@@ -231,6 +231,8 @@ class S3 extends ModulesAbstract {
 							if (strpos($f['filename'], '.gz.' . $f['extension']) !== FALSE) {
 								$requestHeaders = array('Content-Encoding' => 'gzip');
 							}
+						} else if (in_array($f['extension'], array('eot', 'otf', 'ttf', 'woff', 'svg'))) {
+							$requestHeaders = array('Access-Control-Allow-Origin' => '*');
 						}
 
 						// actually create/update the file
@@ -1610,7 +1612,7 @@ class S3 extends ModulesAbstract {
 		}
 
 		error_log('Invalidating the following CloudFront file caches:');
-		error_log('  -' . implode("\n  -", $paths));
+		error_log('  - ' . implode("\n  - ", $paths));
 
 		$useSSL = self::$useSSL;
 		self::$useSSL = true; // CloudFront requires SSL
