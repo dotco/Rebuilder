@@ -123,10 +123,15 @@ class Core {
 	{
 		$return = '<img src="';
 
+		$s3Enabled =
+			isset(self::$s3['enabled'])
+			&& self::$s3['enabled'] === TRUE
+			&& !empty(self::$s3['bucketUrl']);
+
 		// find and replace on image paths
 		if (!empty(self::$img['find_replace'])) {
 			foreach (self::$img['find_replace'] as $k => $v) {
-				if (strpos($v, self::$s3['bucket']) !== FALSE) {
+				if ($s3Enabled && strpos($v, self::$s3['bucket']) !== FALSE) {
 					$v = str_replace(self::$s3['bucket'], '', $v);
 					$v = str_replace('//', '/', $v);
 				}
@@ -136,7 +141,7 @@ class Core {
 		}
 
 		// customize path with S3 settings
-		if (isset(self::$s3['enabled']) && self::$s3['enabled'] === TRUE) {
+		if ($s3Enabled) {
 			if (!empty(self::$s3['cloudFrontBucketUrl'])) {
 				$baseUrl = self::$s3['cloudFrontBucketUrl'];
 			} else {
