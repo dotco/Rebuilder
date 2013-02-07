@@ -131,7 +131,7 @@ class Core {
 					$v = str_replace('//', '/', $v);
 				}
 
-				$path = str_replace($k, $v, $filepath);
+				$path = str_replace($k, $v, $path);
 			}
 		}
 
@@ -159,7 +159,7 @@ class Core {
 		}
 
 		$return .= ' />';
-		return $return;
+		echo $return;
 	}
 
 	/**
