@@ -1609,6 +1609,9 @@ class S3 extends ModulesAbstract {
 			return false;
 		}
 
+		error_log('Invalidating the following CloudFront file caches:');
+		error_log('  -' . implode("\n  -", $paths));
+
 		$useSSL = self::$useSSL;
 		self::$useSSL = true; // CloudFront requires SSL
 		$rest = new S3Request('POST', '', '2010-08-01/distribution/'.$distributionId.'/invalidation', 'cloudfront.amazonaws.com');
