@@ -249,7 +249,7 @@ class S3 extends ModulesAbstract {
 							error_log('Updating file: ' . $f['bucketPath']);
 
 							// add to invalidation array
-							$toBeInvalidated[] = $f['invalidatePath'];
+							$toBeInvalidated[] = '/' . ltrim($f['bucketPath'], '/');
 						}
 
 					} else {
@@ -321,7 +321,6 @@ class S3 extends ModulesAbstract {
 				'filesize' => $info->getSize(),
 				'filepath' => $filepath,
 				'bucketPath' => $bucketPath,
-				'invalidatePath' => preg_replace('/^(' . self::$bucket . ')*/', '', $bucketPath, 1),
 				'lastModified' => $info->getMTime()
 			);
 		}
