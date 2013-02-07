@@ -37,6 +37,12 @@ class Core {
      */
     public static $gzip = array();
 
+	/**
+	 * Stores the incoming image configuration options.
+	 * @var	array
+	 */
+	public static $img = array();
+
     /**
      * Stores the incoming Amazon S3 configuration options.
      * @var array
@@ -67,6 +73,10 @@ class Core {
         if (!empty($config['gzip'])) {
             self::$gzip = $config['gzip'];
         }
+
+		if (!empty($config['img'])) {
+			self::$img = $config['img'];
+		}
 
         if (!empty($config['s3'])) {
             self::$s3 = $config['s3'];
@@ -101,6 +111,55 @@ class Core {
 	public static function js($bundle)
 	{
 		return self::asset($bundle, 'js');
+	}
+
+	/**
+	 * Serve up an image based on bundler settings.
+	 *
+	 * @access	public
+	 * @param	string	$path
+	 */
+	public static function image($path, $params)
+	{
+		$return = '<img src="';
+
+		// find and replace on image paths
+		if (!empty(self::$img['find_replace'])) {
+			foreach (self::$img['find_replace'] as $k => $v) {
+				if (strpos($v, self::$s3['bucket']) !== FALSE) {
+					$v = str_replace(self::$s3['bucket'], '', $v);
+					$v = str_replace('//', '/', $v);
+				}
+
+				$path = str_replace($k, $v, $filepath);
+			}
+		}
+
+		// customize path with S3 settings
+		if (isset(self::$s3['enabled']) && self::$s3['enabled'] === TRUE) {
+			if (!empty(self::$s3['cloudFrontBucketUrl'])) {
+				$baseUrl = self::$s3['cloudFrontBucketUrl'];
+			} else {
+				$baseUrl = self::$s3['bucketUrl'];
+			}
+			$path = $baseUrl . $path;
+		}
+
+		// ensure no double forward slash other than leading
+		$isDoubleForward = strpos($path, '//') === 0;
+		$path = str_replace('//', '/', $path);
+		if ($isDoubleForward) {
+			$path = '/' . $path;
+		}
+		$return .= $path . '"';
+
+		// add in any params
+		foreach ($params as $k => $v) {
+			$return .= ' ' . $k . '="' . $v . '"';
+		}
+
+		$return .= ' />';
+		return $return;
 	}
 
 	/**
