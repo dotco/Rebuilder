@@ -186,7 +186,7 @@ class S3 extends ModulesAbstract {
 		}
 
 		if (!empty(self::$imgDir)) {
-			$exts = array('.jpg', '.jpeg', '.gif', '.png', '.ico');
+			$exts = array('.jpg', '.jpeg', '.gif', '.png', '.ico', '.svg');
 			$files = array_merge($files, $this->_findFilesRecursive(self::$imgDir, $exts));
 		}
 
