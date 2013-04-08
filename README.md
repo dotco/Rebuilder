@@ -20,15 +20,15 @@ Certain Rebuilder modules may have pre-requisites.
 ## Existing Modules ##
 The following modules currently exist and are shipped with Rebuilder:
 
-* JSMin - A modified PHP port of php-jsmin that works with Rebuilder
-* CSSTidy - A modified version of php-css-tidy that works with Rebuilder
-* Gzip - A custom module to generate gzipped files with the extension .gz.ext
-* S3 - A modified version of amazon-s3-php-class that works with Rebuilder and Gzip module
-* Bundler - A wrapper around JSMin and CSSTidy for creating asset "bundles". Includes
+* **JSMin** - A modified PHP port of php-jsmin that works with Rebuilder
+* **CSSTidy** - A modified version of php-css-tidy that works with Rebuilder
+* **Gzip** - A custom module to generate gzipped files with the extension .gz.ext
+* **S3** - A modified version of amazon-s3-php-class that works with Rebuilder and Gzip module
+* **Bundler** - A wrapper around JSMin and CSSTidy for creating asset "bundles". Includes
 a command line binary for "bundling" assets as well as a client side script for
 including bundles on your frontend.
 
-Below is a rundown of the modules and their configuration parameters.
+#### Below is a rundown of the modules and their configuration parameters. ####
 
 ### JSMin ###
 JSMin is a module for combining (merging) a set of JS files into a singular file.
