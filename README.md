@@ -248,3 +248,5 @@ Running the Bundler command line script
 # run bundler
 ./vendor/bin/rebuilder --modules="bundler" --config="/path/to/config.php" --env="local"
 ```
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/dotco/rebuilder/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
